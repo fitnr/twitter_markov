@@ -4,8 +4,7 @@ import json
 from cobe.brain import Brain
 import glob
 import argparse
-import twitter_bot_utils
-from twitter_bot_utils import helpers
+from twitter_bot_utils import helpers, add_logger
 
 DATA_FILES = 'data/js/tweets/*.js'
 
@@ -59,9 +58,15 @@ def construct_tweet_filter(no_mentions=False, no_urls=False, no_media=False, no_
         text = helpers.remove_entities(tweet, entitytypes)
 
         # Older tweets don't have entities
-        # regex stolen from http://stackoverflow.com/questions/6883049/regex-to-find-urls-in-string-in-python
         if no_urls and text.find('http') > -1:
+            # regex stolen from http://stackoverflow.com/questions/6883049/regex-to-find-urls-in-string-in-python
             text = re.sub(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", '', text)
+
+        if no_mentions and text.find('@') > -1:
+            text = re.sub(r'@\w+', '', text)
+
+        if no_hashtags and text.find('#') > -1:
+            text = re.sub(r'#\w+', '', text)
 
         return text
 
@@ -85,7 +90,7 @@ def main():
 
     args = parser.parse_args()
 
-    logger = twitter_bot_utils.add_logger('learner', '.')
+    logger = add_logger('learner', '.')
 
     if not args.quiet:
         print "Reading from " + args.archive
