@@ -1,0 +1,19 @@
+apps:
+    example_app_name:
+        # From dev.twitter.com
+        consumer_key: '...'
+        consumer_secret: '...'
+
+users:
+    example_screen_name:
+        # oauth with twitter to get these
+        key: '...'
+        secret: '...'
+
+        # how many tweets should we check tomake sure we're not repeating a specific tweet?
+        checkback: 100
+
+        # Words to never tweet
+        blacklist:
+            - badword
+            - evilword

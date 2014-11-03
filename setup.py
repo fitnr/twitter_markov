@@ -17,7 +17,8 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'twitter_markov=twitter_markov.tweet:main',
+            'twittermarkov=twitter_markov.tweet:main',
+            'twittermarkov_learn=twitter_markov.learn:main',
         ],
     },
 
@@ -31,7 +32,6 @@ setup(
         'pyyaml',
         'argparse>=1.2.1',
         'tweepy>=1.10.0',
-        'wsgiref>=0.1.2',
         'twitter_bot_utils>=0.1.0'
     ],
 )

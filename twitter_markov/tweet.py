@@ -1,39 +1,28 @@
-import os
 import logging
-import argparse
-from .botconfig import read_config
-import tweepy
-from twitter_bot_utils import setup
+import twitter_bot_utils
+from twitter_markov import Twitter_markov
 
 def main():
-    logger = logging.getLogger('twitter_ebooks')
+    parser = twitter_bot_utils.setup_args(description='Post markov/ebooks tweets to Twitter', usage='%(prog)s [options] SCREEN_NAME')
 
-    parser = argparse.ArgumentParser(description="Post ebooks tweets to twitter.")
-    parser.add_argument('-v', '--verbose', action='store_true', help="Output to stdout")
-    parser.add_argument('-n', '--dry-run', action='store_true', help="don't post to twitter.")
-    parser.add_argument('-t', '--tweet', help="Tweet arbitrary text instead of using the brain.")
-    parser.add_argument('-c', '--config', help="Path to yaml config file. Defaults to ./botrc")
-
-    print os.cwd()
+    parser.add_argument('-r', '--reply', action='store_true', help='tweet responses to recent mentions')
+    parser.add_argument('-t', '--tweet', action='store_true', help='tweet')
+    parser.add_argument('screen_name', type=str, metavar='SCREEN_NAME', help='User who will be tweeting')
 
     args = parser.parse_args()
 
-    config = read_config(args.config)
+    twitter_bot_utils.defaults(args.screen_name, args)
+    logger = logging.getLogger(args.screen_name)
 
-    auth = tweepy.OAuthHandler(consumer_key=config['consumer_key'], consumer_secret=config['consumer_secret'])
-    auth.set_access_token(key=config['token'], secret=config['token_secret'])
-
-    t = tweepy.API(auth)
+    tm = Twitter_markov(**vars(args))
 
     if args.tweet:
-        t.update_status(args.tweet)
-    else:
-        tweet = twert_helper.create_tweet()
+        logger.debug('tweeting...')
+        tm.tweet()
 
-        logger.log(tweet)
-
-        if not args.dry_run:
-            t.update_status(status=tweet)
+    if args.reply:
+        logger.debug('replying to all...')
+        tm.reply_all()
 
 if __name__ == '__main__':
     main()

@@ -1,81 +1,140 @@
-import Levenshtein
 import os
 import re
-import db_manager
-from HTMLParser import HTMLParser
-from botconfig import read_config
+import logging
+import Levenshtein
+from cobe import scoring
 from cobe.brain import Brain
-import datetime
-from twitter_bot_utils import api
+from twitter_bot_utils import api, helpers
+from wordfilter import Wordfilter
 
-# load blacklist
-blacklist = read_config()['blacklist']
-# get all our tweets
-lines = db_manager.get_tweets()
-
-today_is_friday = datetime.date.today().weekday() == 4
-
-# check tweet vs text files and reject if >70% the same as a tweet up in there or if it contains a blacklisted word
-# also reject any blank tweets (this condition can happen when filtering urls)
 
 class Twitter_markov(api.API):
+
     """docstring for Twitter_markov"""
-    def __init__(self, screen_name, **kwargs):
+
+    default_brain = None
+    _recently_tweeted = []
+
+    def __init__(self, screen_name, brains, **kwargs):
         super(Twitter_markov, self).__init__(screen_name, **kwargs)
 
-        
+        self.logger = logging.getLogger(screen_name)
 
-def check_tweet(content):
-    for k in config['blacklist']:
-        # makes the blacklist case insensitive
-        if k.lower() in content.lower():
-            print "[debug] Rejected (blacklist): " + content
+        try:
+            if isinstance(brains, list):
+                brains = [self.user['brains']]
+            else:
+                brains = self.user['brains']
+
+            self.brains = self.setup_brains(brains)
+
+        except IndexError:
+            self.logger.error('Unable to find any brains!')
+
+        self.logger.debug('Brains: {0}'.format(self.brains.keys()))
+
+        self.dry_run = kwargs.get('dry_run', False)
+
+        self.wordfilter = Wordfilter()
+        self.wordfilter.add_words(self.user['blacklist'])
+
+    def setup_brains(self, brains):
+        self.logger.debug('setting up brains')
+        out = dict()
+
+        try:
+            for pth in brains:
+                brainpath = os.path.expanduser(pth)
+                name = os.path.basename(brainpath).replace('.brain', '')
+
+                out[name] = Brain(brainpath)
+                out[name].scorer.add_scorer(2.0, scoring.LengthScorer())
+
+        except Exception as e:
+            self.logger.error(out)
+            raise e
+
+        self.default_brain = os.path.basename(brains[0]).replace('.brain', '')
+
+        return out
+
+    @property
+    def recently_tweeted(self):
+        if len(self._recently_tweeted) == 0:
+            recent_tweets = self.user_timeline(self.screen_name, count=self.config.get('checkback', 20))
+            self._recently_tweeted = [x.text for x in recent_tweets]
+
+        return self._recently_tweeted
+
+    def check_tweet(self, text):
+        if len(text) == 0:
+            self.logger.info("Rejected (empty)")
             return False
-    for line in lines:
-        if Levenshtein.ratio(re.sub(r'\W+', '', content.lower()), re.sub(r'\W+', '', line.lower())) >= 0.70:
-            print "[debug] Rejected (Levenshtein.ratio): " + content
+
+        text = text.strip().lower()
+
+        if self.wordfilter.blacklisted(text):
+            self.logger.info("Rejected (blacklisted)")
             return False
-        if content.strip(' \t\n\r').lower() in line.strip(' \t\n\r').lower():
-            print "[debug] Rejected (Identical): " + content
-            return False
-    if "#ff" in content and not today_is_friday:
-        print "[debug] Rejected (#ff)"
-        return False
-    if len(content) == 0:
-        print "[debug] Rejected (empty)"
-        return False
-    return True
 
-# filter out url from tweet and then remove whitespace around the edges
+        for line in self.recently_tweeted:
+            if text in line.strip().lower():
+                self.logger.info("Rejected (Identical)")
+                return False
 
+            if Levenshtein.ratio(re.sub(r'\W+', '', text), re.sub(r'\W+', '', line.lower())) >= 0.70:
+                self.logger.info("Rejected (Levenshtein.ratio)")
+                return False
 
-def smart_truncate(content, length=140):
-    if len(content) <= length:
-        return content
-    else:
-        return content[:length].rsplit(' ', 1)[0]
+        return True
 
+    def reply_all(self, brain=None):
+        mentions = self.mentions_timeline(since_id=self.last_reply)
+        self.logger.debug('{0} mentions found'.format(len(mentions)))
 
-def create_tweet(catalyst=''):
-    b = Brain(os.path.join(os.path.dirname(__file__), 'cobe.brain'))
+        for status in mentions:
+            self.reply(status, brain)
 
-    # get a reply from brain, encode as UTF-8
-    i = 0
+    def reply(self, status, brainname=None):
+        self.logger.debug('Replying to a mention')
 
-    while True:
-        tweet = b.reply(catalyst).encode('utf-8', 'replace')
-        if(config['filter_urls']):
-            tweet = remove_url(tweet)
-        tweet = smart_truncate(tweet)
-        # make sure we're not tweeting something close to something else in the txt files
-        # or we can just give up after 100 tries
-        if check_tweet(tweet) or i >= 100:
-            break
-        i += 1
+        text = self.compose(status.text, brainname, max_len=138 - len(status.screen_name))
 
-    tweet = HTMLParser().unescape(tweet)
+        reply = u'@' + status.user.screen_name + ' ' + text
 
-    # put the tweet in the db
-    db_manager.insert_tweet(tweet)
+        if not self.dry_run:
+            self.update_status(reply, in_reply_to_status_id=status.id_str)
 
-    return tweet
+        self.logger.debug(reply)
+
+    def tweet(self, catalyst='', brainname=None):
+        self.logger.debug('tweeting')
+
+        text = self.compose(catalyst, brainname)
+
+        if not self.dry_run:
+            self.update_status(text)
+
+        self.logger.debug(text)
+
+    def compose(self, catalyst, brain=None, max_len=140):
+        '''Format a tweet with a reply from a brain'''
+
+        max_len = min(140, max_len)
+
+        brainname = brain or self.default_brain
+        brain = self.brains[brainname]
+
+        catalyst = helpers.format_status(catalyst)
+
+        reply = brain.reply(catalyst, max_len=max_len)
+
+        self.logger.debug(u'input> ' + catalyst)
+        self.logger.debug(u'reply> ' + reply)
+
+        if len(reply) <= 140:
+            return reply
+
+        else:
+            self.logger.debug('Tweet was too long, trying again')
+            return self.compose(catalyst, brainname, max_len)
