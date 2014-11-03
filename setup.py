@@ -1,6 +1,13 @@
 #!/usr/bin/env python
-
+import os
 from setuptools import setup
+
+def read_file(file_name):
+    file_path = os.path.join(
+        os.path.dirname(__file__),
+        file_name
+    )
+    return open(file_path).read()
 
 setup(
     name='twitter_markov',
@@ -14,6 +21,10 @@ setup(
     url='https://github.com/fitnr/twitter_markov',
 
     packages=['twitter_markov'],
+
+    readme=read_file('README.md'),
+
+    license=read_file('LICENSE'),
 
     entry_points={
         'console_scripts': [
