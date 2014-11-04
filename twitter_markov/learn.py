@@ -1,16 +1,13 @@
 import os
-import re
 import json
 from cobe.brain import Brain
 import glob
 import argparse
-from twitter_bot_utils import helpers, add_logger
+from . import checking
 
-DATA_FILES = 'data/js/tweets/*.js'
-
-def archive_gen(directory):
+def archive_gen(directory, date_files='data/js/tweets/*.js'):
     '''Scrape a twitter archive file. Inspiration from https://github.com/mshea/Parse-Twitter-Archive'''
-    files = os.path.join(directory, DATA_FILES)
+    files = os.path.join(directory, date_files)
     files = glob.glob(files)
 
     for fname in files:
@@ -23,54 +20,30 @@ def archive_gen(directory):
                 yield tweet
 
 
-def construct_tweet_checker(no_retweets=False, no_replies=False):
-    '''Returns a tweet checker'''
-    def checker(tweet):
-        if no_retweets and tweet.get('retweeted_status'):
-            return False
+def learn(archive, brain, **kwargs):
+    # start brain. Batch saves us from lots of I/O
+    brain = Brain(brain)
+    brain.start_batch_learning()
 
-        if no_replies and tweet.get('in_reply_to_user_id'):
-            return False
+    tweet_generator = archive_gen(archive)
 
-        return True
+    cool_tweet = checking.construct_tweet_checker(kwargs['no_retweets'], kwargs['no_replies'])
+    tweet_filter = checking.construct_tweet_filter(kwargs['no_mentions'], kwargs['no_urls'], kwargs['no_media'], kwargs['no_hashtags'])
 
-    return checker
+    skip, count = 0, 0
+    for status in tweet_generator:
 
+        if not cool_tweet(status):
+            skip += 1
+            continue
 
-def construct_tweet_filter(no_mentions=False, no_urls=False, no_media=False, no_hashtags=False):
-    '''returns a filter for tweet text'''
+        text = tweet_filter(status)
+        brain.learn(text)
+        count += 1
 
-    entitytypes = []
+    brain.stop_batch_learning()
 
-    if no_mentions:
-        entitytypes.append('user_mentions')
-
-    if no_hashtags:
-        entitytypes.append('hashtags')
-
-    if no_urls:
-        entitytypes.append('urls')
-
-    if no_media:
-        entitytypes.append('media')
-
-    def filterer(tweet):
-        text = helpers.remove_entities(tweet, entitytypes)
-
-        # Older tweets don't have entities
-        if no_urls and text.find('http') > -1:
-            # regex stolen from http://stackoverflow.com/questions/6883049/regex-to-find-urls-in-string-in-python
-            text = re.sub(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", '', text)
-
-        if no_mentions and text.find('@') > -1:
-            text = re.sub(r'@\w+', '', text)
-
-        if no_hashtags and text.find('#') > -1:
-            text = re.sub(r'#\w+', '', text)
-
-        return text
-
-    return filterer
+    return count, skip
 
 
 def main():
@@ -90,8 +63,6 @@ def main():
 
     args = parser.parse_args()
 
-    logger = add_logger('learner', '.')
-
     if not args.quiet:
         print "Reading from " + args.archive
         print "Teaching " + args.brain
@@ -101,30 +72,10 @@ def main():
     else:
         brainpath = args.brain + '.brain'
 
-    # start brain. Batch saves us from lots of I/O
-    brain = Brain(brainpath)
-    brain.start_batch_learning()
+    argdict = vars(args)
+    kwargs = dict((x, argdict[x]) for x in ['no_replies', 'no_retweets', 'no_mentions', 'no_urls', 'no_media'])
 
-    tweet_generator = archive_gen(args.archive)
-
-    cool_tweet = construct_tweet_checker(args.no_retweets, args.no_replies)
-    tweet_filter = construct_tweet_filter(args.no_mentions, args.no_urls, args.no_media, args.no_hashtags)
-
-    skip, count = 0, 0
-    for status in tweet_generator:
-
-        if not cool_tweet(status):
-            skip += 1
-            continue
-
-        text = tweet_filter(status)
-
-        brain.learn(text)
-        logger.info(text)
-
-        count += 1
-
-    brain.stop_batch_learning()
+    count, skip = learn(args.archive, brainpath, **kwargs)
 
     if not args.quiet:
         print "Skipped {0} tweets".format(skip)

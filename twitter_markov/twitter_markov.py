@@ -6,7 +6,7 @@ from cobe import scoring
 from cobe.brain import Brain
 from twitter_bot_utils import api, helpers
 from wordfilter import Wordfilter
-
+from . import checking
 
 class Twitter_markov(api.API):
 
@@ -37,6 +37,9 @@ class Twitter_markov(api.API):
 
         self.wordfilter = Wordfilter()
         self.wordfilter.add_words(self.user['blacklist'])
+
+        if not kwargs.get('no_learn'):
+            self.learn_parent()
 
     def setup_brains(self, brains):
         self.logger.debug('setting up brains')
@@ -138,3 +141,37 @@ class Twitter_markov(api.API):
         else:
             self.logger.debug('Tweet was too long, trying again')
             return self.compose(catalyst, brainname, max_len)
+
+
+    def learn_parent(self, brain=None):
+        parent = self.config.get('parent')
+
+        if not parent:
+            return
+
+        tweet_gate = checking.construct_tweet_checker(
+            no_retweets=self.config.get('no_retweets'),
+            no_replies=self.config.get('no_replies')
+            )
+
+        tweet_filter = checking.construct_tweet_filter(
+            no_mentions=self.config.get('no_mentions'),
+            no_hashtags=self.config.get('no_hashtags'),
+            no_urls=self.config.get('no_urls'),
+            no_media=self.config.get('no_media'),
+            no_symbols=self.config.get('no_symbols')
+            )
+
+        tweets = self.user_timeline(parent, since_id=self.last_tweet)
+
+        brain = brain or self.default_brain
+
+        for status in tweets:
+            if not tweet_gate(status):
+                continue
+
+            text = tweet_filter(status)
+
+            text = helpers.format_text(text)
+
+            self.brains[brain].learn(text)
