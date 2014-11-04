@@ -1,14 +1,30 @@
+import tweepy
 from twitter_bot_utils import helpers
 import re
+
 
 def construct_tweet_checker(no_retweets=False, no_replies=False):
     '''Returns a tweet checker'''
     def checker(tweet):
-        if no_retweets and tweet.get('retweeted_status'):
-            return False
+        if isinstance(tweet, tweepy.Status):
+            try:
+                if no_retweets and tweet.retweeted:
+                    return False
+            except AttributeError:
+                pass
 
-        if no_replies and tweet.get('in_reply_to_user_id'):
-            return False
+            try:
+                if no_replies and tweet.in_reply_to_user_id:
+                    return False
+            except AttributeError:
+                pass
+
+        else:
+            if no_retweets and tweet.get('retweeted_status'):
+                return False
+
+            if no_replies and tweet.get('in_reply_to_user_id'):
+                return False
 
         return True
 
@@ -34,7 +50,6 @@ def construct_tweet_filter(no_mentions=False, no_urls=False, no_media=False, no_
 
     if no_symbols:
         entitytypes.append('symbols')
-
 
     def filterer(tweet):
         text = helpers.remove_entities(tweet, entitytypes)
