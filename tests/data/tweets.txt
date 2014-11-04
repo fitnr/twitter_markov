@@ -1,0 +1,4 @@
+@mention hihdfg
+tweet with a #hashtag
+RT @blah blah blah
+Regular old tweet
