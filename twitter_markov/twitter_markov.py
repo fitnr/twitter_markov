@@ -28,7 +28,7 @@ class Twitter_markov(API):
 
             if not isinstance(brains, list):
                 brain = self.config.get('brain', [])
-                brains = [brain] + self.config.get('brains', [])
+                brains = brain + self.config.get('brains', [])
 
             if not brains:
                 raise RuntimeError
