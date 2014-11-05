@@ -1,11 +1,13 @@
 apps:
     example_app_name:
+
         # From dev.twitter.com
         consumer_key: '...'
         consumer_secret: '...'
 
 users:
     example_screen_name:
+
         # oauth with twitter to get these
         key: '...'
         secret: '...'
@@ -16,39 +18,50 @@ users:
         # If your bot is based on another account, the screen name of that account
         parent: screen_name
 
-        # how many tweets should we check tomake sure we're not repeating a specific tweet?
         # Location of the .brain file
         # This can also be set on the command line
         #
         brain: /path/to/name.brain
 
+        # How many tweets should we check to make sure we're not repeating something we already tweeted?
         checkback: 100
 
         # this improves the bot a bit. Possible values are:
         # danish, dutch, english, finnish, french, german, hungarian, italian, norwegian
         # portuguese, romanian, russian, spanish, swedish, or turkish
+        #
         language: english
 
         # Words to never tweet
+        # These will be added to a built in blacklist, taken from https://github.com/dariusk/wordfilter
+        #
         blacklist:
             - badword
             - evilword
 
-        # With these set, the brain won't learn these type of tweets from its parent
+        # With these set to True, the brain won't tweet these types or learn them from its parent
+        #
         no_retweets: False
         no_replies: False
 
-        # With these set, the text will be stripped of these entities before being fed to the brain
-        # For instance, of no_hashtags is set,
-        # "What's Going On #lemonheads" will be fed to the brain as:
-        # ""What's Going On"
-        no_mentions: False
-
+        # With these set, these types of tweets won't be tweeted
+        # They will still be fed into the brain, they will just
+        # be filtered out of the brain's results
+        #
         no_hashtags: False
-
         no_urls: False
-
-        no_media: False
-
+        no_mentions: False
         # Symbols are stock ticker abbreviations like $APPL
         no_symbols: False
+
+        # With these set, the text will be stripped of these entities before being fed to the brain
+        # For instance, of filter_hashtags is set,
+        # "What's Going On #lemonheads" will be fed to the brain as:
+        # ""What's Going On"
+        # Take care. changing the corpus before feeding the brain can lead to strange results.
+        #
+        filter_hashtags: False
+        filter_media: False
+        filter_urls: False
+        filter_mentions: False
+        filter_symbols: False

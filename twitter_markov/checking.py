@@ -104,6 +104,9 @@ def construct_tweet_filter(no_mentions=False, no_urls=False, no_media=False, no_
         if no_hashtags:
             text = re.sub(r'#\w+', '', text)
 
+        if no_symbols:
+            text = re.sub(r'\$[a-zA-Z]+', '', text)
+
         return text
 
     return filterer

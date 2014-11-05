@@ -31,17 +31,11 @@ def txt_gen(data_file):
         yield tweet.rstrip()
 
 
-def learn(archive, brain, **kwargs):
-    # start brain. Batch saves us from lots of I/O
-    brain = Brain(brain)
-    brain.set_stemmer(kwargs.get('language', 'english'))
-
-    brain.start_batch_learning()
-
+def tweet_generator(archive, **kwargs):
     if kwargs.get('txt'):
-        tweet_generator = txt_gen(archive)
+        generator = txt_gen(archive)
     else:
-        tweet_generator = archive_gen(archive)
+        generator = archive_gen(archive)
 
     cool_tweet = checking.construct_tweet_checker(kwargs.get('no_retweets', False), kwargs.get('no_replies', False))
 
@@ -53,21 +47,32 @@ def learn(archive, brain, **kwargs):
         no_symbols=kwargs.get('no_symbols', False)
     )
 
-    skip, count = 0, 0
-    for status in tweet_generator:
-
+    for status in generator:
         if not cool_tweet(status):
-            skip += 1
             continue
 
         text = tweet_filter(status)
         text = helpers.format_text(text)
+        yield text
+
+
+def learn(archive, brain, **kwargs):
+    # start brain. Batch saves us from lots of I/O
+    brain = Brain(brain)
+    brain.set_stemmer(kwargs.get('language', 'english'))
+
+    brain.start_batch_learning()
+
+    tweets = tweet_generator(archive, **kwargs)
+    count = 0
+
+    for text in tweets:
+        count = count + 1
         brain.learn(text)
-        count += 1
 
     brain.stop_batch_learning()
 
-    return count, skip
+    return count
 
 
 def main():
@@ -102,11 +107,10 @@ def main():
     argdict = vars(args)
     kwargs = dict((x, argdict[x]) for x in ['language', 'no_replies', 'no_hashtags', 'no_retweets', 'no_urls', 'no_media', 'txt'])
 
-    count, skip = learn(args.archive, brainpath, **kwargs)
+    count = learn(args.archive, brainpath, **kwargs)
 
     if not args.quiet:
-        print "Skipped {0} tweets".format(skip)
-        print "Learned {0} tweets".format(count)
+        print "Taught {0} tweets".format(count)
 
 if __name__ == '__main__':
     main()

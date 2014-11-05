@@ -43,7 +43,12 @@ class Twitter_markov(API):
         self.dry_run = kwargs.get('dry_run', False)
 
         self.wordfilter = Wordfilter()
-        self.wordfilter.add_words(self.config['blacklist'])
+        self.wordfilter.add_words(self.config.get('blacklist', []))
+
+        self.checker = checking.construct_tweet_checker(
+            no_retweets=self.config.get('no_retweets'),
+            no_replies=self.config.get('no_replies')
+        )
 
         if learn:
             self.learn_parent()
@@ -81,11 +86,15 @@ class Twitter_markov(API):
         return self._recently_tweeted
 
     def check_tweet(self, text):
+        text = text.strip().lower()
+
         if len(text) == 0:
             self.logger.info("Rejected (empty)")
             return False
 
-        text = text.strip().lower()
+        if not self.checker(text):
+            self.logger.info("Rejected (retweet or reply)")
+            return False
 
         if self.wordfilter.blacklisted(text):
             self.logger.info("Rejected (blacklisted)")
@@ -158,17 +167,12 @@ class Twitter_markov(API):
         if not parent:
             return
 
-        tweet_gate = checking.construct_tweet_checker(
-            no_retweets=self.config.get('no_retweets'),
-            no_replies=self.config.get('no_replies')
-        )
-
         tweet_filter = checking.construct_tweet_filter(
-            no_mentions=self.config.get('no_mentions'),
-            no_hashtags=self.config.get('no_hashtags'),
-            no_urls=self.config.get('no_urls'),
-            no_media=self.config.get('no_media'),
-            no_symbols=self.config.get('no_symbols')
+            no_mentions=self.config.get('filter_mentions'),
+            no_hashtags=self.config.get('filter_hashtags'),
+            no_urls=self.config.get('filter_urls'),
+            no_media=self.config.get('filter_media'),
+            no_symbols=self.config.get('filter_symbols')
         )
 
         tweets = self.user_timeline(parent, since_id=self.last_tweet)
@@ -176,7 +180,7 @@ class Twitter_markov(API):
         brain = brain or self.default_brain
 
         for status in tweets:
-            if not tweet_gate(status):
+            if not self.checker(status):
                 continue
 
             text = tweet_filter(status)
