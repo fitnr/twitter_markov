@@ -28,11 +28,6 @@ $ twittermarkov_learn twitter/archive nameof.brain
 # teach the brain from a text file
 $ twittermarkov_learn --txt file.txt nameof.brain
 
-# teach the brain, ignoring mentions
-$ twittermarkov_learn --no-mentions twitter/archive nameof.brain
-# Text like this will be edited to remove the mention:
-# I ate a sandwich with @sample
-
 $ twittermarkov_learn --no-replies twitter/archive nameof.brain
 # Text like this will be ignored:
 # @sample I ate a sandwich
@@ -42,3 +37,57 @@ $ twittermarkov_learn --no-replies twitter/archive nameof.brain
 ````
 
 If you're using a Twitter archive, the ARCHIVE argument should be the top-level folder of the archive (usually a long name like 16853453_3f21d17c73166ef3c77d7994c880dd93a8159c88). If you have a text file, the argument should be a file name
+
+## Config
+
+See the [bots.yaml](bots.yaml) file for a full list of settings. Plug your settings in and save the file as `bots.yaml` to your home directory  or `~/bots`. You can also use JSON, if that's your thing.
+
+At a minimum, your config file will need to look like this:
+````yaml
+apps:
+    example_app_name:
+        consumer_key: ...
+        consumer_secret: ...
+
+users:
+    example_screen_name:
+
+        key: ...
+        secret: ...
+
+        app: example_app_name
+
+        # If you want your bot to continue to learn, include this
+        parent: your_screen_name
+````
+
+## First Tweet
+
+Tweeting is easy. By default, the `twittermarkov` application will learn recent tweets from your parent and send one tweet.
+
+The very first time you tweet, you should use:
+
+````bash
+$ twittermarkov --tweet --no-learn example_screen_name
+````
+
+After that, use:
+
+````bash
+$ twittermarkov --tweet example_screen_name
+````
+
+To have your bot reply to mentions, use:
+
+````bash
+$ twittermarkov --reply example_screen_name
+````
+
+## Automating
+
+On a *nix system, set up a cron job like so:
+
+````
+0 10-20 * * * twittermarkov --tweet example_screen_name
+15,45 10-20 * * * twittermarkov --reply example_screen_name
+````

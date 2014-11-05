@@ -121,6 +121,10 @@ class Twitter_markov(API):
     def reply(self, status, brainname=None):
         self.logger.debug('Replying to a mention')
 
+        if status.screen_name == self.screen_name:
+            self.logger.debug('Not replying to self')
+            return
+
         catalyst = twitter_bot_utils.helpers.format_status(status)
         text = self.compose(catalyst, brainname, max_len=138 - len(status.screen_name))
 
