@@ -1,32 +1,64 @@
-import tweepy
 from twitter_bot_utils import helpers
 import re
 
 
+def reply_checker(tweet):
+    try:
+        if tweet.in_reply_to_user_id:
+            return False
+
+    except AttributeError:
+        try:
+            if tweet.get('in_reply_to_user_id'):
+                return False
+
+        except AttributeError:
+
+            try:
+                if "@" == tweet[0]:
+                    return False
+
+            except AttributeError:
+                pass
+
+    return True
+
+
+def rt_checker(tweet):
+    try:
+        if tweet.retweeted:
+            return False
+
+    except AttributeError:
+        try:
+            if tweet.get('retweeted_status'):
+                return False
+
+        except AttributeError:
+
+            try:
+                if "RT" in tweet[:2]:
+                    return False
+
+            except AttributeError:
+                pass
+
+    return True
+
+
 def construct_tweet_checker(no_retweets=False, no_replies=False):
     '''Returns a tweet checker'''
+    checks = []
+
+    if no_retweets:
+        checks.append(rt_checker)
+
+    if no_replies:
+        checks.append(no_replies)
+
     def checker(tweet):
-        if isinstance(tweet, tweepy.Status):
-            try:
-                if no_retweets and tweet.retweeted:
-                    return False
-            except AttributeError:
-                pass
-
-            try:
-                if no_replies and tweet.in_reply_to_user_id:
-                    return False
-            except AttributeError:
-                pass
-
-        else:
-            if no_retweets and tweet.get('retweeted_status'):
-                return False
-
-            if no_replies and tweet.get('in_reply_to_user_id'):
-                return False
-
-        return True
+        for check in checks:
+            check(tweet)
 
     return checker
 
@@ -52,17 +84,22 @@ def construct_tweet_filter(no_mentions=False, no_urls=False, no_media=False, no_
         entitytypes.append('symbols')
 
     def filterer(tweet):
-        text = helpers.remove_entities(tweet, entitytypes)
+        # ignore strings
+        if isinstance(tweet, str):
+            text = tweet
+
+        else:
+            text = helpers.remove_entities(tweet, entitytypes)
 
         # Older tweets don't have entities
-        if no_urls and text.find('http') > -1:
+        if no_urls:
             # regex stolen from http://stackoverflow.com/questions/6883049/regex-to-find-urls-in-string-in-python
             text = re.sub(r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+", '', text)
 
-        if no_mentions and text.find('@') > -1:
+        if no_mentions:
             text = re.sub(r'@\w+', '', text)
 
-        if no_hashtags and text.find('#') > -1:
+        if no_hashtags:
             text = re.sub(r'#\w+', '', text)
 
         return text
