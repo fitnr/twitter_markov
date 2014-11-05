@@ -12,7 +12,7 @@ def read_file(file_name):
 setup(
     name='twitter_markov',
 
-    version='0.0.1',
+    version='0.0.2',
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
@@ -43,6 +43,6 @@ setup(
         'pyyaml',
         'argparse>=1.2.1',
         'tweepy>=1.10.0',
-        'twitter_bot_utils>=0.1.0'
+        'twitter_bot_utils>=0.4.0',
     ],
 )

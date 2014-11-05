@@ -22,9 +22,9 @@ class Twitter_markov(api.API):
 
         try:
             if isinstance(brains, list):
-                brains = [self.user['brains']]
+                brains = [self.config['brains']]
             else:
-                brains = self.user['brains']
+                brains = self.config['brains']
 
             self.brains = self.setup_brains(brains)
 
@@ -36,7 +36,7 @@ class Twitter_markov(api.API):
         self.dry_run = kwargs.get('dry_run', False)
 
         self.wordfilter = Wordfilter()
-        self.wordfilter.add_words(self.user['blacklist'])
+        self.wordfilter.add_words(self.config['blacklist'])
 
         if not kwargs.get('no_learn'):
             self.learn_parent()
