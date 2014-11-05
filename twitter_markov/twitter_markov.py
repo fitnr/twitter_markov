@@ -16,7 +16,8 @@ class Twitter_markov(API):
     default_brain = None
     _recently_tweeted = []
 
-    def __init__(self, screen_name, brains=None, learn=True, **kwargs):
+    def __init__(self, screen_name, brains=None, **kwargs):
+
         super(Twitter_markov, self).__init__(screen_name, **kwargs)
 
         self.logger = logging.getLogger(screen_name)
@@ -50,7 +51,7 @@ class Twitter_markov(API):
             no_replies=self.config.get('no_replies')
         )
 
-        if learn:
+        if kwargs.get('learn', True):
             self.learn_parent()
 
     def setup_brains(self, brains):
