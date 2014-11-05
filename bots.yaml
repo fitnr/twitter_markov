@@ -24,6 +24,11 @@ users:
 
         checkback: 100
 
+        # this improves the bot a bit. Possible values are:
+        # danish, dutch, english, finnish, french, german, hungarian, italian, norwegian
+        # portuguese, romanian, russian, spanish, swedish, or turkish
+        language: english
+
         # Words to never tweet
         blacklist:
             - badword

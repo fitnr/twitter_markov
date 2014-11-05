@@ -54,11 +54,13 @@ def construct_tweet_checker(no_retweets=False, no_replies=False):
         checks.append(rt_checker)
 
     if no_replies:
-        checks.append(no_replies)
+        checks.append(reply_checker)
 
     def checker(tweet):
         for check in checks:
-            check(tweet)
+            if not check(tweet):
+                return False
+        return True
 
     return checker
 

@@ -4,6 +4,8 @@ from cobe.brain import Brain
 import glob
 import argparse
 from . import checking
+from twitter_bot_utils import helpers
+
 
 def archive_gen(directory, date_files='data/js/tweets/*.js'):
     '''Scrape a twitter archive file. Inspiration from https://github.com/mshea/Parse-Twitter-Archive'''
@@ -32,6 +34,8 @@ def txt_gen(data_file):
 def learn(archive, brain, **kwargs):
     # start brain. Batch saves us from lots of I/O
     brain = Brain(brain)
+    brain.set_stemmer(kwargs.get('language', 'english'))
+
     brain.start_batch_learning()
 
     if kwargs.get('txt'):
@@ -39,8 +43,15 @@ def learn(archive, brain, **kwargs):
     else:
         tweet_generator = archive_gen(archive)
 
-    cool_tweet = checking.construct_tweet_checker(kwargs['no_retweets'], kwargs['no_replies'])
-    tweet_filter = checking.construct_tweet_filter(kwargs['no_mentions'], kwargs['no_urls'], kwargs['no_media'], kwargs['no_hashtags'])
+    cool_tweet = checking.construct_tweet_checker(kwargs.get('no_retweets', False), kwargs.get('no_replies', False))
+
+    tweet_filter = checking.construct_tweet_filter(
+        no_mentions=kwargs.get('no_mentions', False),
+        no_urls=kwargs.get('no_urls', False),
+        no_media=kwargs.get('no_media', False),
+        no_hashtags=kwargs.get('no_hashtags', False),
+        no_symbols=kwargs.get('no_symbols', False)
+    )
 
     skip, count = 0, 0
     for status in tweet_generator:
@@ -50,6 +61,7 @@ def learn(archive, brain, **kwargs):
             continue
 
         text = tweet_filter(status)
+        text = helpers.format_text(text)
         brain.learn(text)
         count += 1
 
@@ -63,10 +75,11 @@ def main():
 
     parser.add_argument('--no-replies', action='store_true', help='skip replies')
     parser.add_argument('--no-retweets', action='store_true', help='skip retweets')
-    parser.add_argument('--no-mentions', action='store_true', help='filter out mentions')
     parser.add_argument('--no-urls', action='store_true', help='Filter out urls')
     parser.add_argument('--no-media', action='store_true', help='filter out media')
     parser.add_argument('--no-hashtags', action='store_true', help='filter out hashtags')
+
+    parser.add_argument('--language', type=str, default='english', help='language. Defaults to English')
 
     parser.add_argument('--txt', action='store_true', help='Read from a text file, one tweet per line')
 
@@ -87,7 +100,7 @@ def main():
         brainpath = args.brain + '.brain'
 
     argdict = vars(args)
-    kwargs = dict((x, argdict[x]) for x in ['no_replies', 'no_hashtags', 'no_retweets', 'no_mentions', 'no_urls', 'no_media', 'txt'])
+    kwargs = dict((x, argdict[x]) for x in ['language', 'no_replies', 'no_hashtags', 'no_retweets', 'no_urls', 'no_media', 'txt'])
 
     count, skip = learn(args.archive, brainpath, **kwargs)
 
