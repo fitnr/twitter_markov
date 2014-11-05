@@ -34,7 +34,7 @@ setup(
     },
 
     dependency_links=[
-        'https://github.com/fitnr/twitter_bot_utils/archive/0.3.0.tar.gz#egg=twitter_bot_utils-0.3.0'
+        'https://github.com/fitnr/twitter_bot_utils/archive/0.4.0.tar.gz#egg=twitter_bot_utils-0.4.0',
         ],
 
     install_requires=[
@@ -44,5 +44,6 @@ setup(
         'argparse>=1.2.1',
         'tweepy>=1.10.0',
         'twitter_bot_utils>=0.4.0',
+        'wordfilter'
     ],
 )

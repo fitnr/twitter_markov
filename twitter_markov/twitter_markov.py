@@ -4,32 +4,39 @@ import logging
 import Levenshtein
 from cobe import scoring
 from cobe.brain import Brain
-from twitter_bot_utils import api, helpers
+from twitter_bot_utils import API, helpers
 from wordfilter import Wordfilter
 from . import checking
 
-class Twitter_markov(api.API):
+
+class Twitter_markov(API):
 
     """docstring for Twitter_markov"""
 
     default_brain = None
     _recently_tweeted = []
 
-    def __init__(self, screen_name, brains, **kwargs):
+    def __init__(self, screen_name, brains=None, learn=True, **kwargs):
         super(Twitter_markov, self).__init__(screen_name, **kwargs)
 
         self.logger = logging.getLogger(screen_name)
 
         try:
-            if isinstance(brains, list):
-                brains = [self.config['brains']]
-            else:
-                brains = self.config['brains']
+            if isinstance(brains, str):
+                brains = [brains]
+
+            if not isinstance(brains, list):
+                brain = self.config.get('brain', [])
+                brains = [brain] + self.config.get('brains', [])
+
+            if not brains:
+                raise RuntimeError
 
             self.brains = self.setup_brains(brains)
 
-        except IndexError:
-            self.logger.error('Unable to find any brains!')
+        except (IOError, IndexError, RuntimeError) as e:
+            self.logger.error('Feed me brains: unable to find any brains!')
+            raise e
 
         self.logger.debug('Brains: {0}'.format(self.brains.keys()))
 
@@ -38,7 +45,7 @@ class Twitter_markov(api.API):
         self.wordfilter = Wordfilter()
         self.wordfilter.add_words(self.config['blacklist'])
 
-        if not kwargs.get('no_learn'):
+        if learn:
             self.learn_parent()
 
     def setup_brains(self, brains):
@@ -50,11 +57,15 @@ class Twitter_markov(api.API):
                 brainpath = os.path.expanduser(pth)
                 name = os.path.basename(brainpath).replace('.brain', '')
 
+                if not os.path.exists(brainpath):
+                    raise IOError("Brain file '{0}' missing".format(brainpath))
+
                 out[name] = Brain(brainpath)
                 out[name].scorer.add_scorer(2.0, scoring.LengthScorer())
 
-        except Exception as e:
-            self.logger.error(out)
+        except IOError as e:
+            self.logger.error(e)
+            self.logger.error(brains)
             raise e
 
         self.default_brain = os.path.basename(brains[0]).replace('.brain', '')
@@ -101,7 +112,8 @@ class Twitter_markov(api.API):
     def reply(self, status, brainname=None):
         self.logger.debug('Replying to a mention')
 
-        text = self.compose(status.text, brainname, max_len=138 - len(status.screen_name))
+        catalyst = twitter_bot_utils.helpers.format_status(status)
+        text = self.compose(catalyst, brainname, max_len=138 - len(status.screen_name))
 
         reply = u'@' + status.user.screen_name + ' ' + text
 
@@ -120,15 +132,13 @@ class Twitter_markov(api.API):
 
         self.logger.debug(text)
 
-    def compose(self, catalyst, brain=None, max_len=140):
+    def compose(self, catalyst='', brain=None, max_len=140):
         '''Format a tweet with a reply from a brain'''
 
         max_len = min(140, max_len)
 
         brainname = brain or self.default_brain
         brain = self.brains[brainname]
-
-        catalyst = helpers.format_status(catalyst)
 
         reply = brain.reply(catalyst, max_len=max_len)
 
@@ -142,7 +152,6 @@ class Twitter_markov(api.API):
             self.logger.debug('Tweet was too long, trying again')
             return self.compose(catalyst, brainname, max_len)
 
-
     def learn_parent(self, brain=None):
         parent = self.config.get('parent')
 
@@ -152,7 +161,7 @@ class Twitter_markov(api.API):
         tweet_gate = checking.construct_tweet_checker(
             no_retweets=self.config.get('no_retweets'),
             no_replies=self.config.get('no_replies')
-            )
+        )
 
         tweet_filter = checking.construct_tweet_filter(
             no_mentions=self.config.get('no_mentions'),
@@ -160,7 +169,7 @@ class Twitter_markov(api.API):
             no_urls=self.config.get('no_urls'),
             no_media=self.config.get('no_media'),
             no_symbols=self.config.get('no_symbols')
-            )
+        )
 
         tweets = self.user_timeline(parent, since_id=self.last_tweet)
 

@@ -10,10 +10,18 @@ users:
         key: '...'
         secret: '...'
 
+        # this should match one of the apps above
+        app: example_app_name
+
         # If your bot is based on another account, the screen name of that account
         parent: screen_name
 
         # how many tweets should we check tomake sure we're not repeating a specific tweet?
+        # Location of the .brain file
+        # This can also be set on the command line
+        #
+        brain: /path/to/name.brain
+
         checkback: 100
 
         # Words to never tweet

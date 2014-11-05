@@ -7,7 +7,8 @@ def main():
 
     parser.add_argument('-r', '--reply', action='store_true', help='tweet responses to recent mentions')
     parser.add_argument('-t', '--tweet', action='store_true', help='tweet')
-    parser.add_argument('-n', '--no-learn', action='store_false', help='skip learning')
+    parser.add_argument('--brain', dest='brains', metavar='BRAIN', type=str, help='cobe .brain file')
+    parser.add_argument('--no-learn', dest='learn', action='store_false', help='skip learning')
     parser.add_argument('screen_name', type=str, metavar='SCREEN_NAME', help='User who will be tweeting')
 
     args = parser.parse_args()
@@ -22,7 +23,7 @@ def main():
         tm.tweet()
 
     if args.reply:
-        logger.debug('replying to all...')
+        logger.debug('replying to all')
         tm.reply_all()
 
 if __name__ == '__main__':
