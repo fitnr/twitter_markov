@@ -12,7 +12,7 @@ def read_file(file_name):
 setup(
     name='twitter_markov',
 
-    version='0.1.0',
+    version='0.1.1',
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
@@ -34,7 +34,7 @@ setup(
     },
 
     dependency_links=[
-        'https://github.com/fitnr/twitter_bot_utils/archive/0.4.0.tar.gz#egg=twitter_bot_utils-0.4.0',
+        'https://github.com/fitnr/twitter_bot_utils/archive/0.4.2.tar.gz#egg=twitter_bot_utils-0.4.2',
         'https://github.com/fitnr/wordfilter/archive/master.zip#egg=wordfilter-0.1.7'
         ],
 
@@ -44,7 +44,7 @@ setup(
         'pyyaml',
         'argparse>=1.2.1',
         'tweepy>=1.10.0',
-        'twitter_bot_utils>=0.4.0',
+        'twitter_bot_utils>=0.4.2',
         'wordfilter'
     ],
 )

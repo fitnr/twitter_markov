@@ -4,12 +4,13 @@ import logging
 import Levenshtein
 from cobe import scoring
 from cobe.brain import Brain
-from twitter_bot_utils import API, helpers
+import twitter_bot_utils
+from twitter_bot_utils import helpers
 from wordfilter import Wordfilter
 from . import checking
 
 
-class Twitter_markov(API):
+class Twitter_markov(twitter_bot_utils.api.API):
 
     """docstring for Twitter_markov"""
 
