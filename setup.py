@@ -3,10 +3,22 @@ from setuptools import setup
 
 try:
     from pypandoc import convert
-    read_md = lambda f: convert(f, 'rst')
+
+    def read_md(f):
+        try:
+            return convert(f, 'rst')
+        except IOError:
+            return ''
+
 except ImportError:
     print("pypandoc module not found, could not convert Markdown to RST")
-    read_md = lambda f: open(f, 'r').read()
+
+    def read_md(f):
+        try:
+            return open(f, 'r').read()
+        except IOError:
+            return ''
+
 
 setup(
     name='twitter_markov',
@@ -15,15 +27,17 @@ setup(
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
-    long_description=read_md('README.md'),
+    long_description=read_md('readme.md'),
 
-    author='fitnr',
+    author='Neil Freeman',
+
+    author_email='contact@fakeisthenewreal.org',
 
     url='https://github.com/fitnr/twitter_markov',
 
     packages=['twitter_markov'],
 
-    license=open('LICENSE').read(),
+    license='GPL',
 
     entry_points={
         'console_scripts': [
@@ -34,15 +48,17 @@ setup(
 
     dependency_links=[
         'https://github.com/fitnr/wordfilter/archive/master.zip#egg=wordfilter-0.1.7'
-        ],
+    ],
 
     install_requires=[
-        'cobe>=2.1.1',
-        'python-Levenshtein>=0.10.2',
+        'cobe==2.1.1',
+        'python-Levenshtein==0.10.2',
         'pyyaml',
         'argparse==1.2.1',
-        'tweepy>=1.10.0',
-        'twitter_bot_utils==0.5',
+        'tweepy==3.1.0',
+        'twitter_bot_utils==0.5.1',
         'wordfilter'
     ],
+
+    zip_safe=False,
 )
