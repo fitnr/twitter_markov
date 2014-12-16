@@ -23,7 +23,7 @@ except ImportError:
 setup(
     name='twitter_markov',
 
-    version='0.1.2',
+    version='0.2',
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
