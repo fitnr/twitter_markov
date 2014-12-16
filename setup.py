@@ -1,13 +1,12 @@
 #!/usr/bin/env python
-import os
 from setuptools import setup
 
-def read_file(file_name):
-    file_path = os.path.join(
-        os.path.dirname(__file__),
-        file_name
-    )
-    return open(file_path).read()
+try:
+    from pypandoc import convert
+    read_md = lambda f: convert(f, 'rst')
+except ImportError:
+    print("pypandoc module not found, could not convert Markdown to RST")
+    read_md = lambda f: open(f, 'r').read()
 
 setup(
     name='twitter_markov',
@@ -16,15 +15,15 @@ setup(
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
+    long_description=read_md('README.md'),
+
     author='fitnr',
 
     url='https://github.com/fitnr/twitter_markov',
 
     packages=['twitter_markov'],
 
-    readme=read_file('README.md'),
-
-    license=read_file('LICENSE'),
+    license=open('LICENSE').read(),
 
     entry_points={
         'console_scripts': [
@@ -42,7 +41,7 @@ setup(
         'cobe>=2.1.1',
         'python-Levenshtein>=0.10.2',
         'pyyaml',
-        'argparse>=1.2.1',
+        'argparse==1.2.1',
         'tweepy>=1.10.0',
         'twitter_bot_utils>=0.4.2',
         'wordfilter'
