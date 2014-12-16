@@ -19,16 +19,16 @@ Train the brain with the `twittermarkov_learn` command.
 
 The `twittermarkov_learn` comes with options to ignore replies or retweets, and to filter out mentions, urls, media, and/or hashtags.
 
-When reading an archive, these argument use the tweet's metadate to precisely strip the offending content. This may not work well for tweets posted before 2011 or so. For text files or older tweets, a regular expression search is used.
+When reading an archive, these arguments use the tweet's metadata to precisely strip the offending content. This may not work well for tweets posted before 2011 or so. For text files or older tweets, a regular expression search is used.
 
 ```bash
 # Usage is twittermarkov_learn ARCHIVE BRAIN
-$ twittermarkov_learn twitter/archive nameof.brain
+$ twittermarkov_learn twitter/archive/path archive.brain
 
 # teach the brain from a text file
-$ twittermarkov_learn --txt file.txt nameof.brain
+$ twittermarkov_learn --txt file.txt txt.brain
 
-$ twittermarkov_learn --no-replies twitter/archive nameof.brain
+$ twittermarkov_learn --no-replies twitter/archive/path archive-no-replies.brain
 # Text like this will be ignored:
 # @sample I ate a sandwich
 
