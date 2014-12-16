@@ -14,7 +14,7 @@
 
 import logging
 import twitter_bot_utils
-from twitter_markov import Twitter_markov
+from .twitter_markov import Twitter_markov
 
 def main():
     parser = twitter_bot_utils.setup_args(description='Post markov/ebooks tweets to Twitter', usage='%(prog)s [options] SCREEN_NAME')

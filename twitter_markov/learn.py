@@ -110,8 +110,8 @@ def main():
     args = parser.parse_args()
 
     if not args.quiet:
-        print "Reading from " + args.archive
-        print "Teaching " + args.brain
+        print("Reading from " + args.archive)
+        print("Teaching " + args.brain)
 
     if args.brain[-6:] == '.brain':
         brainpath = args.brain
@@ -124,7 +124,7 @@ def main():
     count = learn(args.archive, brainpath, **kwargs)
 
     if not args.quiet:
-        print "Taught {0} tweets".format(count)
+        print("Taught {0} tweets".format(count))
 
 if __name__ == '__main__':
     main()

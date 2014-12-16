@@ -54,7 +54,7 @@ class Twitter_markov(twitter_bot_utils.api.API):
             self.logger.error('Feed me brains: unable to find any brains!')
             raise e
 
-        self.logger.debug('Brains: {0}'.format(self.brains.keys()))
+        self.logger.debug('Brains: {0}'.format(list(self.brains.keys())))
 
         self.dry_run = kwargs.get('dry_run', False)
 
