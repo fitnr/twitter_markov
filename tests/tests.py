@@ -65,15 +65,6 @@ class tweeter_markov_tests(unittest.TestCase):
         reply_filter = checking.construct_tweet_checker(no_replies=True)
         assert reply_filter(self.status) is False
 
-    def test_loading_archive_data(self):
-        archive = learn.archive_gen(self.archive)
-        a = list(archive)
-        assert len(a) == 3
-
-    def test_loading_text_data(self):
-        txt = learn.txt_gen(self.txtfile)
-        assert len(list(txt)) == 4
-
     def test_reply_filtering_txtfile(self):
         generator = learn.tweet_generator(self.txtfile, txt=1, no_replies=1)
         assert len(list(generator)) == 3
