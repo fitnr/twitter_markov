@@ -40,7 +40,7 @@ If you're using a Twitter archive, the ARCHIVE argument should be the top-level 
 
 ## Config
 
-See the [bots.yaml](bots.yaml) file for a full list of settings. Plug your settings in and save the file as `bots.yaml` to your home directory  or `~/bots`. You can also use JSON, if that's your thing.
+See the [bots.yaml](https://github.com/fitnr/twitter_markov/blob/master/bots.yaml) file for a full list of settings. Plug your settings in and save the file as `bots.yaml` to your home directory  or `~/bots`. You can also use JSON, if that's your thing.
 
 At a minimum, your config file will need to look like this:
 ````yaml
@@ -60,6 +60,8 @@ users:
         # If you want your bot to continue to learn, include this
         parent: your_screen_name
 ````
+
+Read up on [dev.twitter.com](https://dev.twitter.com/oauth/overview) on obtaining authentication tokens.
 
 ## First Tweet
 
