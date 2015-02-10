@@ -23,7 +23,7 @@ except ImportError:
 setup(
     name='twitter_markov',
 
-    version='0.2.1',
+    version='0.2.2',
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
@@ -47,7 +47,7 @@ setup(
     },
 
     dependency_links=[
-        'https://github.com/fitnr/wordfilter/archive/master.zip#egg=wordfilter-0.1.7'
+        'https://github.com/fitnr/wordfilter/archive/v0.1.8.zip#egg=wordfilter-0.1.8'
     ],
 
     install_requires=[
@@ -57,7 +57,7 @@ setup(
         'argparse==1.2.1',
         'tweepy==3.1.0',
         'twitter_bot_utils==0.6.2',
-        'wordfilter'
+        'wordfilter>=0.1.8'
     ],
 
 )
