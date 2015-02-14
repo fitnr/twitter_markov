@@ -24,7 +24,7 @@ from wordfilter import Wordfilter
 from . import checking
 
 
-class Twitter_markov(twitter_bot_utils.api.API):
+class Twitter_markov(object):
 
     """docstring for Twitter_markov"""
 
@@ -33,7 +33,11 @@ class Twitter_markov(twitter_bot_utils.api.API):
 
     def __init__(self, screen_name, brains=None, **kwargs):
 
-        super(Twitter_markov, self).__init__(screen_name, **kwargs)
+        self.screen_name = screen_name
+
+        self.api = kwargs.get('api', twitter_bot_utils.api.API(screen_name, **kwargs))
+
+        self.config = self.api.config
 
         self.logger = logging.getLogger(screen_name)
 
@@ -96,7 +100,7 @@ class Twitter_markov(twitter_bot_utils.api.API):
     @property
     def recently_tweeted(self):
         if len(self._recently_tweeted) == 0:
-            recent_tweets = self.user_timeline(self.screen_name, count=self.config.get('checkback', 20))
+            recent_tweets = self.api.user_timeline(self.screen_name, count=self.config.get('checkback', 20))
             self._recently_tweeted = [x.text for x in recent_tweets]
 
         return self._recently_tweeted
@@ -128,7 +132,7 @@ class Twitter_markov(twitter_bot_utils.api.API):
         return True
 
     def reply_all(self, brain=None):
-        mentions = self.mentions_timeline(since_id=self.last_reply)
+        mentions = self.api.mentions_timeline(since_id=self.api.last_reply)
         self.logger.debug('{0} mentions found'.format(len(mentions)))
 
         for status in mentions:
@@ -146,8 +150,6 @@ class Twitter_markov(twitter_bot_utils.api.API):
 
         reply = u'@' + status.user.screen_name + ' ' + text
 
-        if not self.dry_run:
-            self.update_status(reply, in_reply_to_status_id=status.id_str)
 
         self.logger.debug(reply)
 
@@ -156,11 +158,12 @@ class Twitter_markov(twitter_bot_utils.api.API):
 
         text = self.compose(catalyst, brainname)
 
-        if not self.dry_run:
             self.update_status(text)
 
         self.logger.debug(text)
 
+        if not self.dry_run:
+            self.api.update_status(status=tweet, in_reply_to_status_id=in_reply)
     def compose(self, catalyst='', brain=None, max_len=140):
         '''Format a tweet with a reply from a brain'''
 
@@ -195,7 +198,7 @@ class Twitter_markov(twitter_bot_utils.api.API):
             no_symbols=self.config.get('filter_symbols')
         )
 
-        tweets = self.user_timeline(parent, since_id=self.last_tweet)
+        tweets = self.api.user_timeline(parent, since_id=self.api.last_tweet)
 
         brain = brain or self.default_brain
 
