@@ -150,20 +150,21 @@ class Twitter_markov(object):
 
         reply = u'@' + status.user.screen_name + ' ' + text
 
-
-        self.logger.debug(reply)
+        self.logger.info(reply)
+        self._update(reply, in_reply=status.id_str)
 
     def tweet(self, catalyst='', brainname=None):
         self.logger.debug('tweeting')
 
         text = self.compose(catalyst, brainname)
 
-            self.update_status(text)
+        self.logger.info(text)
+        self._update(text)
 
-        self.logger.debug(text)
-
+    def _update(self, tweet, in_reply=None):
         if not self.dry_run:
             self.api.update_status(status=tweet, in_reply_to_status_id=in_reply)
+
     def compose(self, catalyst='', brain=None, max_len=140):
         '''Format a tweet with a reply from a brain'''
 
