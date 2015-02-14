@@ -37,7 +37,7 @@ class Twitter_markov(object):
 
         self.api = kwargs.get('api', twitter_bot_utils.api.API(screen_name, **kwargs))
 
-        self.config = self.api.config
+        self.config = kwargs.get('config', self.api.config)
 
         self.logger = logging.getLogger(screen_name)
 
@@ -52,7 +52,7 @@ class Twitter_markov(object):
             if not brains:
                 raise RuntimeError
 
-            self.brains = self.setup_brains(brains)
+            self.brains = self._setup_brains(brains)
 
         except (IOError, IndexError, RuntimeError) as e:
             self.logger.error('Feed me brains: unable to find any brains!')
@@ -73,7 +73,7 @@ class Twitter_markov(object):
         if kwargs.get('learn', True):
             self.learn_parent()
 
-    def setup_brains(self, brains):
+    def _setup_brains(self, brains):
         self.logger.debug('setting up brains')
         out = dict()
 
@@ -131,12 +131,12 @@ class Twitter_markov(object):
 
         return True
 
-    def reply_all(self, brain=None):
+    def reply_all(self, brainname=None):
         mentions = self.api.mentions_timeline(since_id=self.api.last_reply)
         self.logger.debug('{0} mentions found'.format(len(mentions)))
 
         for status in mentions:
-            self.reply(status, brain)
+            self.reply(status, brainname)
 
     def reply(self, status, brainname=None):
         self.logger.debug('Replying to a mention')
@@ -165,12 +165,12 @@ class Twitter_markov(object):
         if not self.dry_run:
             self.api.update_status(status=tweet, in_reply_to_status_id=in_reply)
 
-    def compose(self, catalyst='', brain=None, max_len=140):
-        '''Format a tweet with a reply from a brain'''
+    def compose(self, catalyst='', brainname=None, max_len=140):
+        '''Format a tweet with a reply from brainname'''
 
         max_len = min(140, max_len)
 
-        brainname = brain or self.default_brain
+        brainname = brainname or self.default_brain
         brain = self.brains[brainname]
 
         reply = brain.reply(catalyst, max_len=max_len)
@@ -185,7 +185,7 @@ class Twitter_markov(object):
             self.logger.debug('Tweet was too long, trying again')
             return self.compose(catalyst, brainname, max_len)
 
-    def learn_parent(self, brain=None):
+    def learn_parent(self, brainname=None):
         parent = self.config.get('parent')
 
         if not parent:
@@ -201,7 +201,7 @@ class Twitter_markov(object):
 
         tweets = self.api.user_timeline(parent, since_id=self.api.last_tweet)
 
-        brain = brain or self.default_brain
+        brain = brainname or self.default_brain
 
         for status in tweets:
             if not self.checker(status):
