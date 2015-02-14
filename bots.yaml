@@ -33,7 +33,7 @@ users:
         language: english
 
         # Words to never tweet
-        # These will be added to a built in blacklist, taken from https://github.com/dariusk/wordfilter
+        # These will be added to a built-in blacklist, taken from https://github.com/dariusk/wordfilter
         #
         blacklist:
             - badword

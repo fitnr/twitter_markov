@@ -93,3 +93,29 @@ On a *nix system, set up a cron job like so:
 0 10-20 * * * twittermarkov --tweet example_screen_name
 15,45 10-20 * * * twittermarkov --reply example_screen_name
 ````
+
+## API
+
+If you want to write a script to expand on twitter_markov, the api is fairly simple.
+
+#### class twitter_markov.Twitter_markov(screen_name, brains=None, config=None, api=None)
+
+* screen_name - Twitter user account
+* brains - Path to a brain file, or a list of paths. If omitted, Twitter_markov looks in its config for a `brains` entry.
+* config - A dictionary of configuration settings. But default, twitter_markov will try to read this from the bots.yaml file (see above)/
+* api - A tweepy-like API object. In the twitter_markov class, this is a `twitter_bot_utils.API` object.
+
+The first brain in brains (or in the config file) will be the default brain.
+
+Properties:
+* recently_tweeted - A list of the 20 (or `config['checkback']`) most recent tweets `screen_name`.
+
+Methods:
+
+* `check_tweet(text)`: Check if a string contains blacklisted words or is similar to a recent tweet.
+* `reply(status, brainname=None): Compose a reply to the given `tweepy.Status`. Brainname could refer to the filename of a given brain (for instance, "special" for the brain stored at "dir/special.brain").
+* `reply_all(brainname=None)`: Reply to all mentions since the last time `self.screen_name` sent a reply tweet.
+* `compose(catalyst='', brainname=None, max_len=140)`: Returns a string generated "brainname" (or the default brain).
+* `tweet(catylyst='', brainname=None)`: Post a tweet composed by giving "catalyst" to "brainname" (or the default brain).
+* `learn_parent(brainname=None)`: Learn recent tweets (since the last time `self.screen_name` tweeted) by the parent account. This is subject to the filters described in `bots.yaml`.
+
