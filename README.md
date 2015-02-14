@@ -11,7 +11,7 @@ The audience for this library is those with at least basic Python experience. Be
 
 ## Install
 
-Download or clone the package and run `python setup.py install`. Feel free to use a virtualenv, if you're into that.
+Run `pip install twitter_markov`, or download/clone the package and run `python setup.py install`. Feel free to use a virtualenv, if you're into that.
 
 ## Brain Train
 
