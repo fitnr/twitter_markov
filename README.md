@@ -96,9 +96,9 @@ On a *nix system, set up a cron job like so:
 
 ## API
 
-If you want to write a script to expand on twitter_markov, the api is fairly simple.
+If you want to write a script to expand on twitter_markov, you'll find a fairly simple set of tools.
 
-#### class twitter_markov.Twitter_markov(screen_name, brains=None, config=None, api=None)
+_class twitter_markov.Twitter_markov(screen_name, brains=None, config=None, api=None)_
 
 * screen_name - Twitter user account
 * brains - Path to a brain file, or a list of paths. If omitted, Twitter_markov looks in its config for a `brains` entry.
@@ -108,7 +108,7 @@ If you want to write a script to expand on twitter_markov, the api is fairly sim
 The first brain in brains (or in the config file) will be the default brain.
 
 Properties:
-* recently_tweeted - A list of the 20 (or `config['checkback']`) most recent tweets `screen_name`.
+* recently_tweeted - A list of the 20 (or `config['checkback']`) most recent tweets from `self.screen_name`.
 
 Methods:
 
