@@ -13,6 +13,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from twitter_bot_utils import helpers
+import wordfilter
 import re
 
 
@@ -60,7 +61,7 @@ def rt_checker(tweet):
     return True
 
 
-def construct_tweet_checker(no_retweets=False, no_replies=False):
+def construct_tweet_checker(no_retweets=False, no_replies=False, no_badwords=True):
     '''Returns a tweet checker'''
     checks = []
 
@@ -69,6 +70,9 @@ def construct_tweet_checker(no_retweets=False, no_replies=False):
 
     if no_replies:
         checks.append(reply_checker)
+
+    if no_badwords:
+        checks.append(wordfilter.blacklisted)
 
     def checker(tweet):
         for check in checks:

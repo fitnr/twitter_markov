@@ -199,12 +199,18 @@ class Twitter_markov(object):
             no_symbols=self.config.get('filter_symbols')
         )
 
+        tweet_checker = checking.construct_tweet_checker(
+            no_badwords=self.config.get('filter_parent_badwords', True),
+            no_retweets=self.config.get('no_retweets'),
+            no_replies=self.config.get('no_replies')
+            )
+
         tweets = self.api.user_timeline(parent, since_id=self.api.last_tweet)
 
         brain = brainname or self.default_brain
 
         for status in tweets:
-            if not self.checker(status):
+            if not tweet_checker(status):
                 continue
 
             text = tweet_filter(status)

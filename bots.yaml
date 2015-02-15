@@ -65,3 +65,6 @@ users:
         filter_urls: False
         filter_mentions: False
         filter_symbols: False
+
+        # By default, wordfilter is applied to the parent's tweets.
+        filter_parent_badwords: True
