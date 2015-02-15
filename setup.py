@@ -23,7 +23,7 @@ except ImportError:
 setup(
     name='twitter_markov',
 
-    version='0.2.4',
+    version='0.2.5',
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
@@ -45,6 +45,8 @@ setup(
             'twittermarkov_learn=twitter_markov.learn:main',
         ],
     },
+
+    use_2to3=True,
 
     install_requires=[
         'cobe==2.1.1',
