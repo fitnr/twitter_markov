@@ -61,6 +61,21 @@ def rt_checker(tweet):
     return True
 
 
+def wf_checker(tweet):
+    try:
+        if wordfilter.blacklisted(tweet.text):
+            return False
+
+    except AttributeError:
+        try:
+            if wordfilter.blacklisted(tweet['text']):
+                return False
+
+        except (KeyError, TypeError):
+            pass
+
+    return True
+
 def construct_tweet_checker(no_retweets=False, no_replies=False, no_badwords=True):
     '''Returns a tweet checker'''
     checks = []
@@ -72,7 +87,7 @@ def construct_tweet_checker(no_retweets=False, no_replies=False, no_badwords=Tru
         checks.append(reply_checker)
 
     if no_badwords:
-        checks.append(wordfilter.blacklisted)
+        checks.append(wf_checker)
 
     def checker(tweet):
         for check in checks:
