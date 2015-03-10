@@ -23,7 +23,7 @@ except ImportError:
 setup(
     name='twitter_markov',
 
-    version='0.2.4-1',
+    version='0.2.5',
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
@@ -52,7 +52,7 @@ setup(
         'pyyaml',
         'argparse==1.2.1',
         'tweepy',
-        'twitter_bot_utils>=0.6.3, <=1.0',
+        'twitter_bot_utils>=0.6.7',
         'wordfilter==0.1.8'
     ],
 

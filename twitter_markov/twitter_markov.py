@@ -88,6 +88,11 @@ class Twitter_markov(object):
                 out[name] = Brain(brainpath)
                 out[name].scorer.add_scorer(2.0, scoring.LengthScorer())
 
+        except AttributeError as e:
+            self.logger.error(e)
+            self.logger.error("Probably couldn't find the brain file.")
+            raise e
+
         except IOError as e:
             self.logger.error(e)
             self.logger.error(brains)
