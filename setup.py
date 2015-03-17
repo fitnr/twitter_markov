@@ -6,7 +6,7 @@ readme = 'readme.rst'
 setup(
     name='twitter_markov',
 
-    version='0.2.5',
+    version='0.2.5.1',
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
