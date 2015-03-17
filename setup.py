@@ -1,24 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-try:
-    from pypandoc import convert
-
-    def read_md(f):
-        try:
-            return convert(f, 'rst')
-        except IOError:
-            return ''
-
-except ImportError:
-    print("pypandoc module not found, could not convert Markdown to RST")
-
-    def read_md(f):
-        try:
-            return open(f, 'r').read()
-        except IOError:
-            return ''
-
+readme = 'readme.rst'
 
 setup(
     name='twitter_markov',
@@ -27,7 +10,7 @@ setup(
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
-    long_description=read_md('readme.md'),
+    long_description=open(readme, 'r').read(),
 
     author='Neil Freeman',
 
