@@ -13,11 +13,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import twitter_bot_utils
+import argparse
+import twitter_bot_utils.args as tbu
 from .twitter_markov import Twitter_markov
 
+
 def main():
-    parser = twitter_bot_utils.setup_args(description='Post markov/ebooks tweets to Twitter', usage='%(prog)s [options] SCREEN_NAME')
+    parser = argparse.ArgumentParser(
+        description='Post markov chain ("ebooks") tweets to Twitter', usage='%(prog)s [options] SCREEN_NAME',
+        parents=[tbu.parent()])
 
     parser.add_argument('-r', '--reply', action='store_true', help='tweet responses to recent mentions')
     parser.add_argument('-t', '--tweet', action='store_true', help='tweet')
@@ -27,7 +31,7 @@ def main():
 
     args = parser.parse_args()
 
-    twitter_bot_utils.defaults(args.screen_name, args)
+    tbu.add_logger(args.screen_name, args.verbose)
     logger = logging.getLogger(args.screen_name)
 
     tm = Twitter_markov(**vars(args))

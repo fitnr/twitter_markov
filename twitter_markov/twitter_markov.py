@@ -18,8 +18,7 @@ import logging
 import Levenshtein
 from cobe import scoring
 from cobe.brain import Brain
-import twitter_bot_utils
-from twitter_bot_utils import helpers
+import twitter_bot_utils as tbu
 from wordfilter import Wordfilter
 from . import checking
 
@@ -35,7 +34,7 @@ class Twitter_markov(object):
 
         self.screen_name = screen_name
 
-        self.api = kwargs.get('api', twitter_bot_utils.api.API(screen_name, **kwargs))
+        self.api = kwargs.get('api', tbu.api.API(screen_name, **kwargs))
 
         self.config = kwargs.get('config', self.api.config)
 
@@ -150,7 +149,7 @@ class Twitter_markov(object):
             self.logger.debug('Not replying to self')
             return
 
-        catalyst = twitter_bot_utils.helpers.format_status(status)
+        catalyst = tbu.helpers.format_status(status)
         text = self.compose(catalyst, brainname, max_len=138 - len(status.screen_name))
 
         reply = u'@' + status.user.screen_name + ' ' + text
@@ -220,6 +219,6 @@ class Twitter_markov(object):
 
             text = tweet_filter(status)
 
-            text = helpers.format_text(text)
+            text = tbu.helpers.format_text(text)
 
             self.brains[brain].learn(text)
