@@ -25,7 +25,6 @@ setup(
     entry_points={
         'console_scripts': [
             'twittermarkov=twitter_markov.tweet:main',
-            'twittermarkov_learn=twitter_markov.learn:main',
         ],
     },
 

@@ -23,10 +23,10 @@ When reading an archive, these arguments use the tweet's metadata to precisely s
 
 ```bash
 # Usage is twittermarkov_learn ARCHIVE BRAIN
-$ twittermarkov_learn twitter/archive/path archive.brain
+$ twittermarkov learn twitter/archive/path archive.brain
 
 # teach the brain from a text file
-$ twittermarkov_learn --txt file.txt txt.brain
+$ twittermarkov learn --txt file.txt txt.brain
 
 $ twittermarkov_learn --no-replies twitter/archive/path archive-no-replies.brain
 # Text like this will be ignored:
@@ -65,33 +65,44 @@ Read up on [dev.twitter.com](https://dev.twitter.com/oauth/overview) on obtainin
 
 ## First Tweet
 
-Tweeting is easy. By default, the `twittermarkov` application will learn recent tweets from your parent and send one tweet.
+Tweeting is easy. By default, the `twittermarkov` command line application will learn recent tweets from your parent and send one tweet.
 
 The very first time you tweet, you should use:
 
 ````bash
-$ twittermarkov --tweet --no-learn example_screen_name
+$ twittermarkov tweet --no-learn example_screen_name
 ````
 
 After that, use:
-
 ````bash
-$ twittermarkov --tweet example_screen_name
+$ twittermarkov tweet --no-learn example_screen_name
+````
+
+To have your bot reply to mentions, use:
+````bash
+$ twittermarkov tweet --reply example_screen_name
 ````
 
 To have your bot reply to mentions, use:
 
 ````bash
-$ twittermarkov --reply example_screen_name
+$ twittermarkov tweet --reply example_screen_name
 ````
+
+If you don't want to bot to learn from the parent account, use
+````bash
+$ twittermarkov tweet --no-learn example_screen_name
+````
+
+The learning also won't happen if twittermarkov can't find it's previous tweets, which might happen if there are problems with the Twitter API, or your _ebooks account has never tweeted.
 
 ## Automating
 
 On a *nix system, set up a cron job like so:
 
 ````
-0 10-20 * * * twittermarkov --tweet example_screen_name
-15,45 10-20 * * * twittermarkov --reply example_screen_name
+0 10-20 * * * twittermarkov tweet example_screen_name
+15,45 10-20 * * * twittermarkov tweet --reply example_screen_name
 ````
 
 ## API

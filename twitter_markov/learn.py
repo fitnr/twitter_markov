@@ -12,9 +12,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 from cobe.brain import Brain
-import argparse
 from . import checking
 from twitter_bot_utils import helpers, archive
 
@@ -62,49 +60,3 @@ def learn(archivepath, brain, **kwargs):
     brain.stop_batch_learning()
 
     return count
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        description='Teach a Cobe brain the contents of a Twitter archive', usage="%(prog)s [options] ARCHIVEPATH NEWBRAIN")
-
-    parser.add_argument('--no-replies', action='store_true', help='skip replies')
-    parser.add_argument('--no-retweets', action='store_true', help='skip retweets')
-    parser.add_argument('--no-urls', action='store_true', help='Filter out urls')
-    parser.add_argument('--no-media', action='store_true', help='filter out media')
-    parser.add_argument('--no-hashtags', action='store_true', help='filter out hashtags')
-
-    parser.add_argument(
-        '--language', type=str, default='english', help='language. Defaults to English')
-
-    parser.add_argument(
-        '--txt', action='store_true', help='Read from a text file, one tweet per line')
-
-    parser.add_argument('-q', '--quiet', action='store_true', help='run quietly')
-
-    parser.add_argument('archive', type=str, metavar='ARCHIVEPATH',
-                        default=os.getcwd(), help='top-level folder of twitter archive')
-    parser.add_argument('brain', type=str, metavar='NEWBRAIN', help='brain file to create')
-
-    args = parser.parse_args()
-
-    if not args.quiet:
-        print("Reading from " + args.archive)
-        print("Teaching " + args.brain)
-
-    if args.brain[-6:] == '.brain':
-        brainpath = args.brain
-    else:
-        brainpath = args.brain + '.brain'
-
-    argdict = vars(args)
-    kwargs = dict((x, argdict[x]) for x in [
-                  'language', 'no_replies', 'no_hashtags', 'no_retweets', 'no_urls', 'no_media', 'txt'])
-
-    count = learn(args.archive, brainpath, **kwargs)
-
-    if not args.quiet:
-        print("Taught {0} tweets".format(count))
-
-if __name__ == '__main__':
-    main()
