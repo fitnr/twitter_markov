@@ -38,4 +38,6 @@ setup(
         'wordfilter==0.1.8'
     ],
 
+    test_suite='tests',
+
 )
