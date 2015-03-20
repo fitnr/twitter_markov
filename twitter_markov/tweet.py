@@ -1,4 +1,4 @@
-# Copyright 2014 Neil Freeman contact@fakeisthenewreal.org
+# Copyright 2014-2015 Neil Freeman contact@fakeisthenewreal.org
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -30,7 +30,8 @@ def main():
 
     subparsers = parser.add_subparsers()
     tweet = subparsers.add_parser(
-        'tweet', description='Post markov chain ("ebooks") tweets to Twitter', usage='%(prog)s [options] SCREEN_NAME', parents=[tbu.parent()])
+        'tweet', parents=[tbu.parent()],
+        description='Post markov chain ("ebooks") tweets to Twitter', usage='%(prog)s [options] SCREEN_NAME')
 
     tweet.add_argument('-r', '--reply', action='store_const', const='reply', dest='action', help='tweet responses to recent mentions')
     tweet.add_argument('--brain', dest='brains', metavar='BRAIN', type=str, help='cobe .brain file')
@@ -39,12 +40,12 @@ def main():
     tweet.set_defaults(prog='tweet', action='tweet')
 
     learnparser = subparsers.add_parser(
-        'learn', description='Teach a Cobe brain the contents of a Twitter archive', usage="%(prog)s [options] ARCHIVEPATH NEWBRAIN")
+        'learn', description='Teach a Cobe brain the contents of a Twitter archive',
+        usage="%(prog)s [options] ARCHIVEPATH NEWBRAIN")
 
     add_learn_subparser_arguments(learnparser)
 
     args = parser.parse_args()
-
     argdict = vars(args)
 
     # Tweet

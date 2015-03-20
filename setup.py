@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 from setuptools import setup
+from twitter_markov import __version__
 
 readme = 'readme.rst'
 
 setup(
     name='twitter_markov',
 
-    version='0.2.5.1',
+    version=__version__,
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
@@ -34,7 +35,7 @@ setup(
         'pyyaml',
         'argparse==1.2.1',
         'tweepy',
-        'twitter_bot_utils>=0.7, <0.8',
+        'twitter_bot_utils>=0.8, <0.9',
         'wordfilter==0.1.8'
     ],
 
