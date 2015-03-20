@@ -24,7 +24,7 @@ from . import __version__
 
 
 def main():
-    parser = argparse.ArgumentParser('Tweet with a markov bot, or teach it from a twitter archive.')
+    parser = argparse.ArgumentParser('twittermarkov', description='Tweet with a markov bot, or teach it from a twitter archive.')
 
     parser.add_argument('-V', '--version', action='version', version="%(prog)s " + __version__)
 
