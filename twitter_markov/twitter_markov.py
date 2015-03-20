@@ -25,7 +25,7 @@ from . import checking
 
 class Twitter_markov(object):
 
-    """docstring for Twitter_markov"""
+    """Posts markov-generated text to twitter"""
 
     default_brain = None
     _recently_tweeted = []
@@ -145,12 +145,12 @@ class Twitter_markov(object):
     def reply(self, status, brainname=None):
         self.logger.debug('Replying to a mention')
 
-        if status.screen_name == self.screen_name:
+        if status.user.screen_name == self.screen_name:
             self.logger.debug('Not replying to self')
             return
 
         catalyst = tbu.helpers.format_status(status)
-        text = self.compose(catalyst, brainname, max_len=138 - len(status.screen_name))
+        text = self.compose(catalyst, brainname, max_len=138 - len(status.user.screen_name))
 
         reply = u'@' + status.user.screen_name + ' ' + text
 
