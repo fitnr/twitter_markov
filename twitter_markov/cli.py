@@ -37,64 +37,64 @@ def main():
     tweet.add_argument('--brain', dest='brains', metavar='BRAIN', type=str, help='cobe .brain file')
     tweet.add_argument('--no-learn', dest='learn', action='store_false', help='skip learning')
     tweet.add_argument('screen_name', type=str, metavar='SCREEN_NAME', help='User who will be tweeting')
-    tweet.set_defaults(prog='tweet', action='tweet')
+    tweet.set_defaults(func=tweet_func, action='tweet')
 
     learnparser = subparsers.add_parser(
         'learn', description='Teach a Cobe brain the contents of a Twitter archive',
         usage="%(prog)s [options] ARCHIVEPATH NEWBRAIN")
 
-    add_learn_subparser_arguments(learnparser)
+    learnparser.add_argument('--no-replies', action='store_true', help='skip replies')
+    learnparser.add_argument('--no-retweets', action='store_true', help='skip retweets')
+    learnparser.add_argument('--no-urls', action='store_true', help='Filter out urls')
+    learnparser.add_argument('--no-media', action='store_true', help='filter out media')
+    learnparser.add_argument('--no-hashtags', action='store_true', help='filter out hashtags')
+    learnparser.add_argument(
+        '--language', type=str, default='english', help='language. Defaults to English')
+    learnparser.add_argument(
+        '--txt', action='store_true', help='Read from a text file, one tweet per line')
+    learnparser.add_argument('-q', '--quiet', action='store_true', help='run quietly')
+    learnparser.add_argument('archive', type=str, metavar='ARCHIVEPATH',
+                             default=os.getcwd(), help='top-level folder of twitter archive')
+    learnparser.add_argument('brain', type=str, metavar='NEWBRAIN', help='brain file to create')
+    learnparser.set_defaults(func=learn_func)
 
     args = parser.parse_args()
+
     argdict = vars(args)
+    del argdict['func']
 
-    # Tweet
-    if args.prog == 'tweet':
-        tbu.add_logger(args.screen_name, args.verbose)
-        logger = logging.getLogger(args.screen_name)
-
-        tm = Twitter_markov(**argdict)
-
-        if args.tweet:
-            logger.debug('tweeting...')
-            tm.tweet()
-
-        if args.reply:
-            logger.debug('replying to all')
-            tm.reply_all()
-
-    # Learn
-    elif args.prog == 'learn':
-        if not args.quiet:
-            print("Reading from " + args.archive, file=sys.stderr)
-            print("Teaching " + args.brain, file=sys.stderr)
-
-        if args.brain[-6:] == '.brain':
-            brainpath = args.brain
-        else:
-            brainpath = args.brain + '.brain'
-
-        count = learn(args.archive, brainpath, **argdict)
-
-        if not args.quiet:
-            print("Taught {0} tweets".format(count))
+    args.func(argdict)
 
 
-def add_learn_subparser_arguments(parser):
-    parser.add_argument('--no-replies', action='store_true', help='skip replies')
-    parser.add_argument('--no-retweets', action='store_true', help='skip retweets')
-    parser.add_argument('--no-urls', action='store_true', help='Filter out urls')
-    parser.add_argument('--no-media', action='store_true', help='filter out media')
-    parser.add_argument('--no-hashtags', action='store_true', help='filter out hashtags')
-    parser.add_argument(
-        '--language', type=str, default='english', help='language. Defaults to English')
-    parser.add_argument(
-        '--txt', action='store_true', help='Read from a text file, one tweet per line')
-    parser.add_argument('-q', '--quiet', action='store_true', help='run quietly')
-    parser.add_argument('archive', type=str, metavar='ARCHIVEPATH',
-                        default=os.getcwd(), help='top-level folder of twitter archive')
-    parser.add_argument('brain', type=str, metavar='NEWBRAIN', help='brain file to create')
-    parser.set_defaults(prog='learn')
+def tweet_func(args):
+    tbu.add_logger(args['screen_name'], args['verbose'])
+    logger = logging.getLogger(args['screen_name'])
+
+    tm = Twitter_markov(**args)
+
+    if args['tweet']:
+        logger.debug('tweeting...')
+        tm.tweet()
+
+    if args['reply']:
+        logger.debug('replying to all')
+        tm.reply_all()
+
+
+def learn_func(args):
+    if not args['quiet']:
+        print("Reading from " + args['archive'], file=sys.stderr)
+        print("Teaching " + args['brain'], file=sys.stderr)
+
+    if args['brain'][-6:] == '.brain':
+        brainpath = args['brain']
+    else:
+        brainpath = args['brain'] + '.brain'
+
+    count = learn(args['archive'], brainpath, **args)
+
+    if not args['quiet']:
+        print("Taught {0} tweets".format(count))
 
 
 if __name__ == '__main__':
