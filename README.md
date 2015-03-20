@@ -67,12 +67,6 @@ Read up on [dev.twitter.com](https://dev.twitter.com/oauth/overview) on obtainin
 
 Tweeting is easy. By default, the `twittermarkov` command line application will learn recent tweets from your parent and send one tweet.
 
-The very first time you tweet, you should use:
-
-````bash
-$ twittermarkov tweet --no-learn example_screen_name
-````
-
 After that, use:
 ````bash
 $ twittermarkov tweet --no-learn example_screen_name

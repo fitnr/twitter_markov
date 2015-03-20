@@ -192,7 +192,9 @@ class Twitter_markov(object):
     def learn_parent(self, brainname=None):
         parent = self.config.get('parent')
 
-        if not parent:
+        last_tweet = self.api.last_tweet
+
+        if not parent or not last_tweet:
             return
 
         tweet_filter = checking.construct_tweet_filter(
@@ -209,7 +211,7 @@ class Twitter_markov(object):
             no_replies=self.config.get('no_replies')
             )
 
-        tweets = self.api.user_timeline(parent, since_id=self.api.last_tweet)
+        tweets = self.api.user_timeline(parent, since_id=last_tweet)
 
         brain = brainname or self.default_brain
 
