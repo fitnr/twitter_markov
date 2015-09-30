@@ -29,6 +29,14 @@ setup(
         ],
     },
 
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Programming Language :: Python :: 2.7',
+        'Operating System :: OS Independent',
+    ],
+
     install_requires=[
         'cobe>=2.1.1, <2.2',
         'python-Levenshtein>=0.12.0, <0.13',
@@ -41,6 +49,8 @@ setup(
 
     test_suite='tests',
     tests_require=[
-        'mock==1.1.2'
+        'setuptools>=17.1',
+        'pbr>=0.11,<1.0',
+        'mock',
     ],
 )
