@@ -40,5 +40,7 @@ setup(
     ],
 
     test_suite='tests',
-
+    tests_require=[
+        'mock==1.1.2'
+    ],
 )

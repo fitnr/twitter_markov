@@ -50,9 +50,6 @@ class tweeter_markov_tests(unittest.TestCase):
 
         self.archive = path.dirname(__file__)
 
-    def test_learning(self):
-        pass
-
     def test_mention_filter(self):
         mention_filter = checking.construct_tweet_filter(no_mentions=True)
         assert mention_filter(self.status) == u' example tweet example tweet example tweet'

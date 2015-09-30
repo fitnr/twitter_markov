@@ -12,6 +12,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals, print_function
 import os
 import re
 import logging
@@ -36,7 +37,7 @@ class Twitter_markov(object):
 
         self.api = kwargs.get('api', tbu.api.API(screen_name, **kwargs))
 
-        self.config = kwargs.get('config', self.api.config)
+        self.config = self.api.config
 
         self.logger = logging.getLogger(screen_name)
 
@@ -44,12 +45,9 @@ class Twitter_markov(object):
             if isinstance(brains, str):
                 brains = [brains]
 
-            if not isinstance(brains, list):
-                brain = self.config.get('brain', [])
-                brains = brain + self.config.get('brains', [])
-
             if not brains:
-                raise RuntimeError
+                brains = [self.config.get('brain')] + self.config.get('brains', [])
+                brains = [b for b in brains if b is not None]
 
             self.brains = self._setup_brains(brains)
 
@@ -63,11 +61,6 @@ class Twitter_markov(object):
 
         self.wordfilter = Wordfilter()
         self.wordfilter.add_words(self.config.get('blacklist', []))
-
-        self.checker = checking.construct_tweet_checker(
-            no_retweets=self.config.get('no_retweets'),
-            no_replies=self.config.get('no_replies')
-        )
 
         if kwargs.get('learn', True):
             self.learn_parent()
@@ -116,10 +109,6 @@ class Twitter_markov(object):
             self.logger.info("Rejected (empty)")
             return False
 
-        if not self.checker(text):
-            self.logger.info("Rejected (retweet or reply)")
-            return False
-
         if self.wordfilter.blacklisted(text):
             self.logger.info("Rejected (blacklisted)")
             return False
@@ -152,7 +141,7 @@ class Twitter_markov(object):
         catalyst = tbu.helpers.format_status(status)
         text = self.compose(catalyst, brainname, max_len=138 - len(status.user.screen_name))
 
-        reply = u'@' + status.user.screen_name + ' ' + text
+        reply = '@' + status.user.screen_name + ' ' + text
 
         self.logger.info(reply)
         self._update(reply, in_reply=status.id_str)
@@ -179,8 +168,8 @@ class Twitter_markov(object):
 
         reply = brain.reply(catalyst, max_len=max_len)
 
-        self.logger.debug(u'input> ' + catalyst)
-        self.logger.debug(u'reply> ' + reply)
+        self.logger.debug('input> ' + catalyst)
+        self.logger.debug('reply> ' + reply)
 
         if len(reply) <= 140:
             return reply
