@@ -1,2 +1,2 @@
-readme.rst: readme.md
-	pandoc $< -o $@
+readme.rst: README.md
+	pandoc $< -o $@ || cp $< $@

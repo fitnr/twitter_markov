@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from setuptools import setup
 
-readme = 'readme.rst'
 
 setup(
     name='twitter_markov',
@@ -10,7 +9,7 @@ setup(
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
-    long_description=open(readme, 'r').read(),
+    long_description=open('readme.rst', 'r').read(),
 
     author='Neil Freeman',
 

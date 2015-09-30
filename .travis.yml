@@ -4,6 +4,7 @@ python:
  - 2.7
 
 install:
+ - make
  - pip install setuptools>=17.1 "pbr>=0.11,<1.0" mock
  - python setup.py install
 
