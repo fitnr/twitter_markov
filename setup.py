@@ -17,14 +17,19 @@
 
 from setuptools import setup
 
+try:
+    readme = open('README.rst', 'r').read()
+except IOError:
+    readme = open('README.md', 'r').read()
+
 setup(
     name='twitter_markov',
 
-    version="0.3.2",
+    version="0.3.3",
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
-    long_description=open('readme.rst', 'r').read(),
+    long_description=readme,
 
     author='Neil Freeman',
 
