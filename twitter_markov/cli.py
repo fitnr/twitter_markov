@@ -41,7 +41,7 @@ def main():
 
     learnparser = subparsers.add_parser(
         'learn', description='Teach a Cobe brain the contents of a Twitter archive',
-        usage="%(prog)s [options] ARCHIVEPATH NEWBRAIN")
+        usage="%(prog)s [options] ARCHIVEPATH BRAINPATH")
 
     learnparser.add_argument('--no-replies', action='store_true', help='skip replies')
     learnparser.add_argument('--no-retweets', action='store_true', help='skip retweets')
@@ -55,15 +55,16 @@ def main():
     learnparser.add_argument('-q', '--quiet', action='store_true', help='run quietly')
     learnparser.add_argument('archive', type=str, metavar='ARCHIVEPATH',
                              default=os.getcwd(), help='top-level folder of twitter archive')
-    learnparser.add_argument('brain', type=str, metavar='NEWBRAIN', help='brain file to create')
+    learnparser.add_argument('brainpath', type=str, metavar='BRAINPATH', help='brain file to create')
     learnparser.set_defaults(func=learn_func)
 
     args = parser.parse_args()
+    func = args.func
 
     argdict = vars(args)
     del argdict['func']
 
-    args.func(argdict)
+    func(argdict)
 
 
 def tweet_func(args):
@@ -84,12 +85,12 @@ def tweet_func(args):
 def learn_func(args):
     if not args['quiet']:
         print("Reading from " + args['archive'], file=sys.stderr)
-        print("Teaching " + args['brain'], file=sys.stderr)
+        print("Teaching " + args['brainpath'], file=sys.stderr)
 
-    if args['brain'][-6:] == '.brain':
-        brainpath = args['brain']
+    if args['brainpath'][-6:] == '.brain':
+        brainpath = args['brainpath']
     else:
-        brainpath = args['brain'] + '.brain'
+        brainpath = args['brainpath'] + '.brain'
 
     count = learn(args['archive'], brainpath, **args)
 
