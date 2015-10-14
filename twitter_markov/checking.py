@@ -24,7 +24,7 @@ def reply_checker(tweet):
 
     except AttributeError:
         try:
-            if tweet.get('in_reply_to_user_id'):
+            if tweet.get('in_reply_to_user_id') or tweet.get('in_reply_to_status_id'):
                 return False
 
         except AttributeError:
@@ -46,7 +46,7 @@ def rt_checker(tweet):
 
     except AttributeError:
         try:
-            if tweet.get('retweeted_status'):
+            if tweet.get('retweeted_status') or tweet.get('retweeted_status_id'):
                 return False
 
         except AttributeError:

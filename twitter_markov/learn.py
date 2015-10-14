@@ -21,7 +21,7 @@ def tweet_generator(archivepath, **kwargs):
     if kwargs.get('txt'):
         generator = archive.read_text(archivepath)
     else:
-        generator = archive.read_json(archivepath)
+        generator = archive.read_csv(archivepath)
 
     cool_tweet = checking.construct_tweet_checker(
         kwargs.get('no_retweets', False), kwargs.get('no_replies', False))

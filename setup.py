@@ -61,7 +61,7 @@ setup(
         'pyyaml',
         'tweepy',
         'argparse==1.2.1',
-        'twitter_bot_utils>=0.9, <0.10',
+        'twitter_bot_utils>=0.9.5, <0.10',
         'wordfilter>=0.1.8, <0.2.0'
     ],
 
