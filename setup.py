@@ -20,7 +20,7 @@ from setuptools import setup
 try:
     readme = open('README.rst', 'r').read()
 except IOError:
-    readme = open('README.md', 'r').read()
+    readme = ''
 
 setup(
     name='twitter_markov',
