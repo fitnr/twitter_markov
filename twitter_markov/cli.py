@@ -18,14 +18,14 @@ import sys
 import logging
 import argparse
 import twitter_bot_utils as tbu
-from .twitter_markov import Twitter_markov
-from . import __version__
+from . import TwitterMarkov
+from . import __version__ as version
 
 
 def main():
     parser = argparse.ArgumentParser('twittermarkov', description='Tweet with a markov bot, or teach it from a twitter archive.')
 
-    parser.add_argument('-V', '--version', action='version', version="%(prog)s " + __version__)
+    parser.add_argument('-V', '--version', action='version', version="%(prog)s " + version)
 
     subparsers = parser.add_subparsers()
     tweeter = subparsers.add_parser('tweet',
@@ -68,7 +68,7 @@ def tweet_func(args):
     tbu.args.add_logger(args['screen_name'], args['verbose'])
     logger = logging.getLogger(args['screen_name'])
 
-    tm = Twitter_markov(**args)
+    tm = TwitterMarkov(**args)
 
     if args['action'] == 'tweet':
         logger.debug('tweeting...')

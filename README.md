@@ -90,7 +90,7 @@ On a *nix system, set up a cron job like so:
 
 If you want to write a script to expand on twitter_markov, you'll find a fairly simple set of tools.
 
-_class twitter_markov.Twitter_markov(screen_name, corpus=None, config=None, api=None)_
+_class twitter_markov.TwitterMarkov(screen_name, corpus=None, config=None, api=None)_
 
 * screen_name - Twitter user account
 * corpus - Path to a corpus file, or a list of paths. If omitted, Twitter_markov looks in its config for `corpus` and/or `corpora` entries.

@@ -18,7 +18,7 @@ import unittest
 from os import path
 import mock
 import tweepy
-from twitter_markov import twitter_markov
+from twitter_markov import TwitterMarkov
 
 try:
     basestring
@@ -55,8 +55,10 @@ TIMELINE = [
     },
 ]
 
+
 def fake_timeline():
     return [tweepy.Status.parse(tweepy.api, t) for t in TIMELINE]
+
 
 class tweeter_markov_tests(unittest.TestCase):
 
@@ -65,11 +67,11 @@ class tweeter_markov_tests(unittest.TestCase):
         self.corpus = path.join(path.dirname(__file__), 'data', 'tweets.txt')
         self.configfile = path.join(path.dirname(__file__), '..', 'bots.yaml')
 
+        self.tm = TwitterMarkov('example_screen_name', [self.corpus], config=self.configfile,
+                                dry_run=True, learn=False)
 
-        self.tm = twitter_markov.Twitter_markov('example_screen_name', [self.corpus], config=self.configfile,
-                                                dry_run=True, learn=False)
-
-    def testTwitterMarkovCompose(self):
+    @mock.patch.object(tweepy.API, 'user_timeline', return_value=fake_timeline())
+    def testTwitterMarkovCompose(self, *_):
         response = self.tm.compose(tries=150, max_overlap_ratio=2, max_overlap_total=100)
 
         assert isinstance(response, basestring)

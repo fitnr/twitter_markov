@@ -27,7 +27,7 @@ from . import checking
 
 LEVENSHTEIN_LIMIT = 0.70
 
-class Twitter_markov(object):
+class TwitterMarkov(object):
 
     """Posts markov-generated text to twitter"""
 

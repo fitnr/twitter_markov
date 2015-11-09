@@ -6,6 +6,7 @@
 * Replace `twittermarkov learn` with `twittermarkov corpus`
 * Add checking.generator function
 * Restore similarity/blacklist checker for generated text
+* rename class from Twitter_markov to TwitterMarkov
 
 0.3
 ---

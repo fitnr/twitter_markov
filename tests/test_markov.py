@@ -18,12 +18,13 @@ from __future__ import unicode_literals
 import unittest
 from os import path
 import markovify.text
-from twitter_markov import twitter_markov
+from twitter_markov import TwitterMarkov
 
 try:
     basestring
 except NameError:
     basestring = str
+
 
 class tweeter_markov_tests(unittest.TestCase):
 
@@ -31,12 +32,11 @@ class tweeter_markov_tests(unittest.TestCase):
         self.corpus = path.join(path.dirname(__file__), 'data', 'tweets.txt')
         self.configfile = path.join(path.dirname(__file__), '..', 'bots.yaml')
 
-
     def testTwitterMarkovAttribs(self):
-        tm = twitter_markov.Twitter_markov('example_screen_name', self.corpus,
-                                           config=self.configfile, dry_run=True, learn=False)
+        tm = TwitterMarkov('example_screen_name', self.corpus,
+                           config=self.configfile, dry_run=True, learn=False)
 
-        assert type(tm) == twitter_markov.Twitter_markov
+        assert type(tm) == TwitterMarkov
 
         assert hasattr(tm, 'screen_name')
         assert hasattr(tm, 'api')
@@ -45,30 +45,25 @@ class tweeter_markov_tests(unittest.TestCase):
         del tm
 
     def testTwitterMarkovConfigCorpus(self):
-        tm = twitter_markov.Twitter_markov('example_screen_name', config=self.configfile,
-                                           dry_run=True, learn=False)
-        assert type(tm) == twitter_markov.Twitter_markov
+        tm = TwitterMarkov('example_screen_name', config=self.configfile,
+                           dry_run=True, learn=False)
+        assert type(tm) == TwitterMarkov
         del tm
 
     def testTwitterMarkovListCorpus(self):
-        tm = twitter_markov.Twitter_markov('example_screen_name', [self.corpus], config=self.configfile,
-                                           dry_run=True, learn=False)
-        assert type(tm) == twitter_markov.Twitter_markov
+        tm = TwitterMarkov('example_screen_name', [self.corpus], config=self.configfile,
+                           dry_run=True, learn=False)
+        assert type(tm) == TwitterMarkov
         del tm
 
     def testTwitterMarkovErrors(self):
-        self.assertRaises(IOError, twitter_markov.Twitter_markov, 'example_screen_name', 'foo')
+        self.assertRaises(IOError, TwitterMarkov, 'example_screen_name', 'foo')
 
-    def testTwitterMarkovModel(self):
-        tm = twitter_markov.Twitter_markov('example_screen_name', self.corpus,
-                                           config=self.configfile, dry_run=True, learn=False)
+    def testTwitterMarkovModel(self, *_):
+        tm = TwitterMarkov('example_screen_name', self.corpus,
+                           config=self.configfile, dry_run=True, learn=False)
 
         assert isinstance(tm.models['tweets.txt'], markovify.text.Text)
-
-        string = tm.compose(tries=50, max_overlap_ratio=2, max_overlap_total=100)
-        assert isinstance(string, basestring)
-        assert len(string) > 0
-
 
 if __name__ == '__main__':
     unittest.main()

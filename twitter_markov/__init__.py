@@ -16,4 +16,4 @@
 
 __version__ = "0.4.0"
 
-from .twitter_markov import Twitter_markov
+from .twitter_markov import TwitterMarkov
