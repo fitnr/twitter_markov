@@ -96,6 +96,7 @@ _class twitter_markov.TwitterMarkov(screen_name, corpus=None, config=None, api=N
 * corpus - Path to a corpus file, or a list of paths. If omitted, Twitter_markov looks in its config for `corpus` and/or `corpora` entries.
 * config - A dictionary of configuration settings. But default, twitter_markov will try to read this from the bots.yaml file (see above)/
 * api - A tweepy-like API object. In the twitter_markov class, this is a `twitter_bot_utils.API` object.
+* blacklist - A list of words to avoid generating
 
 The first corpus in the found corpora (or in the config file) will be the default. When using the class with more than corpus, you can specify a corpus with the `model` keyword argument using the basename of the given file, e.g. "special.txt" for the corpus stored at "dir/special.txt".
 
@@ -111,3 +112,16 @@ Methods:
 * `tweet(model=None)`: Post a tweet composed by "model" (or the default model).
 * `learn_parent(corpus=None, model=None)`: Add recent tweets from the parent account (since the last time `self.screen_name` tweeted) to the corpus. This is subject to the filters described in `bots.yaml`.
 
+### Example
+
+This assumes a corpus file (`corpus.txt`) and config file (`config.yaml`). 
+
+````python
+from twitter_markov import TwitterMarkov
+
+tm = TwitterMarkov('example_screen_name', 'corpus.txt', config_file='config.yaml')
+tweet = tm.compose()
+
+# do something more with tweet, or use the Tweepy API in a different way
+tm.api.update_status(tweet)
+````
