@@ -23,6 +23,8 @@ import twitter_bot_utils as tbu
 from wordfilter import Wordfilter
 from . import checking
 
+LEVENSHTEIN_LIMIT = 0.70
+
 class Twitter_markov(object):
 
     """Posts markov-generated text to twitter"""
@@ -126,7 +128,7 @@ class Twitter_markov(object):
                 self.logger.info("Rejected (Identical)")
                 return False
 
-            if Levenshtein.ratio(re.sub(r'\W+', '', text), re.sub(r'\W+', '', line.lower())) >= 0.70:
+            if Levenshtein.ratio(re.sub(r'\W+', '', text), re.sub(r'\W+', '', line.lower())) >= LEVENSHTEIN_LIMIT:
                 self.logger.info("Rejected (Levenshtein.ratio)")
                 return False
 
