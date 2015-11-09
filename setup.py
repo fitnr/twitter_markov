@@ -52,8 +52,12 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Operating System :: OS Independent',
     ],
+
+    use2to3=True,
 
     install_requires=[
         'markovify>=0.2.4,<0.3',
