@@ -15,23 +15,22 @@
 from __future__ import unicode_literals, print_function
 import os
 import re
+from collections import Iterable
 import logging
 import Levenshtein
-from cobe import scoring
-from cobe.brain import Brain
+import markovify.text
 import twitter_bot_utils as tbu
 from wordfilter import Wordfilter
 from . import checking
-
 
 class Twitter_markov(object):
 
     """Posts markov-generated text to twitter"""
 
-    default_brain = None
+    default_model = None
     _recently_tweeted = []
 
-    def __init__(self, screen_name, brains=None, **kwargs):
+    def __init__(self, screen_name, corpus=None, **kwargs):
 
         self.screen_name = screen_name
 
@@ -41,21 +40,29 @@ class Twitter_markov(object):
 
         self.logger = logging.getLogger(screen_name)
 
+        self.logger.debug('{}, {}, {}'.format(screen_name, corpus, kwargs))
+
         try:
-            if isinstance(brains, str):
-                brains = [brains]
+            if isinstance(corpus, basestring):
+                corpora = [corpus]
 
-            if not brains:
-                brains = [self.config.get('brain')] + self.config.get('brains', [])
-                brains = [b for b in brains if b is not None]
+            elif isinstance(corpus, Iterable):
+                corpora = corpus
 
-            self.brains = self._setup_brains(brains)
+            else:
+                corpora = [self.config.get('corpus')] + self.config.get('corpora', [])
+                corpora = [b for b in corpora if b is not None]
+
+            self.corpora = corpora
+            self.logger.debug('corpora: {}'.format(self.corpora))
+
+            self.models = self._setup_models(self.corpora)
 
         except (IOError, IndexError, RuntimeError) as e:
-            self.logger.error('Feed me brains: unable to find any brains!')
+            self.logger.error('Unable to find any corpora!')
             raise e
 
-        self.logger.debug('Brains: {0}'.format(list(self.brains.keys())))
+        self.logger.debug('models: {0}'.format(list(self.models.keys())))
 
         self.dry_run = kwargs.get('dry_run', False)
 
@@ -65,32 +72,33 @@ class Twitter_markov(object):
         if kwargs.get('learn', True):
             self.learn_parent()
 
-    def _setup_brains(self, brains):
-        self.logger.debug('setting up brains')
+    def _setup_models(self, corpora):
+        """
+        Given a list of paths to corpus text files, set up markovify models for each.
+        These models are returned in a dict, (with the basename as key).
+        """
+        self.logger.debug('setting up models')
         out = dict()
 
         try:
-            for pth in brains:
-                brainpath = os.path.expanduser(pth)
-                name = os.path.basename(brainpath).replace('.brain', '')
+            for pth in corpora:
+                corpus_path = os.path.expanduser(pth)
+                name = os.path.basename(corpus_path)
 
-                if not os.path.exists(brainpath):
-                    raise IOError("Brain file '{0}' missing".format(brainpath))
-
-                out[name] = Brain(brainpath)
-                out[name].scorer.add_scorer(2.0, scoring.LengthScorer())
+                with open(corpus_path) as m:
+                    out[name] = markovify.text.NewlineText(m.read(), state_size=3)
 
         except AttributeError as e:
             self.logger.error(e)
-            self.logger.error("Probably couldn't find the brain file.")
+            self.logger.error("Probably couldn't find the model file.")
             raise e
 
         except IOError as e:
             self.logger.error(e)
-            self.logger.error(brains)
+            self.logger.error('Error reading {}'.format(corpus_path))
             raise e
 
-        self.default_brain = os.path.basename(brains[0]).replace('.brain', '')
+        self.default_model = os.path.basename(corpora[0])
 
         return out
 
@@ -124,32 +132,31 @@ class Twitter_markov(object):
 
         return True
 
-    def reply_all(self, brainname=None):
+    def reply_all(self, model=None, **kwargs):
         mentions = self.api.mentions_timeline(since_id=self.api.last_reply)
         self.logger.debug('{0} mentions found'.format(len(mentions)))
 
         for status in mentions:
-            self.reply(status, brainname)
+            self.reply(status, model, **kwargs)
 
-    def reply(self, status, brainname=None):
+    def reply(self, status, model=None, **kwargs):
         self.logger.debug('Replying to a mention')
 
         if status.user.screen_name == self.screen_name:
             self.logger.debug('Not replying to self')
             return
 
-        catalyst = tbu.helpers.format_status(status)
-        text = self.compose(catalyst, brainname, max_len=138 - len(status.user.screen_name))
+        text = self.compose(model, max_len=138 - len(status.user.screen_name), **kwargs)
 
         reply = '@' + status.user.screen_name + ' ' + text
 
         self.logger.info(reply)
         self._update(reply, in_reply=status.id_str)
 
-    def tweet(self, catalyst='', brainname=None):
+    def tweet(self, model=None, **kwargs):
         self.logger.debug('tweeting')
 
-        text = self.compose(catalyst, brainname)
+        text = self.compose(model, **kwargs)
 
         self.logger.info(text)
         self._update(text)
@@ -158,58 +165,60 @@ class Twitter_markov(object):
         if not self.dry_run:
             self.api.update_status(status=tweet, in_reply_to_status_id=in_reply)
 
-    def compose(self, catalyst='', brainname=None, max_len=140):
-        '''Format a tweet with a reply from brainname'''
+    def compose(self, model=None, max_len=140, **kwargs):
+        '''Format a tweet with a reply.'''
 
         max_len = min(140, max_len)
 
-        brainname = brainname or self.default_brain
-        brain = self.brains[brainname]
+        model = self.models[model or self.default_model]
 
-        reply = brain.reply(catalyst, max_len=max_len)
+        text = ''
 
-        self.logger.debug('input> ' + catalyst)
-        self.logger.debug('reply> ' + reply)
+        while True:
+            sentence = model.make_sentence(**kwargs)
 
-        if len(reply) <= 140:
-            return reply
-
-        else:
-            self.logger.debug('Tweet was too long, trying again')
-            return self.compose(catalyst, brainname, max_len)
-
-    def learn_parent(self, brainname=None):
-        parent = self.config.get('parent')
-
-        last_tweet = self.api.last_tweet
-
-        if not parent or not last_tweet:
-            return
-
-        tweet_filter = checking.construct_tweet_filter(
-            no_mentions=self.config.get('filter_mentions'),
-            no_hashtags=self.config.get('filter_hashtags'),
-            no_urls=self.config.get('filter_urls'),
-            no_media=self.config.get('filter_media'),
-            no_symbols=self.config.get('filter_symbols')
-        )
-
-        tweet_checker = checking.construct_tweet_checker(
-            no_badwords=self.config.get('filter_parent_badwords', True),
-            no_retweets=self.config.get('no_retweets'),
-            no_replies=self.config.get('no_replies')
-            )
-
-        tweets = self.api.user_timeline(parent, since_id=last_tweet)
-
-        brain = brainname or self.default_brain
-
-        for status in tweets:
-            if not tweet_checker(status):
+            if not sentence:
                 continue
 
-            text = tweet_filter(status)
+            if len(text + sentence) < max_len - 1:
+                text = text + ' ' + sentence
 
-            text = tbu.helpers.format_text(text)
+            else:
+                break
 
-            self.brains[brain].learn(text)
+        self.logger.debug('text> ' + text)
+
+        return text
+
+    def learn_parent(self, corpus=None, parent=None):
+        '''Add recent tweets from @parent to corpus'''
+        parent = parent or self.config.get('parent')
+        corpus = corpus or self.corpora[0]
+
+        if not parent or not self.api.last_tweet:
+            self.logger.debug('Cannot teach: missing parent or tweets')
+            return
+
+        tweets = self.api.user_timeline(parent, since_id=self.api.last_tweet)
+
+        try:
+            gen = checking.generator(tweets,
+                                     no_mentions=self.config.get('filter_mentions'),
+                                     no_hashtags=self.config.get('filter_hashtags'),
+                                     no_urls=self.config.get('filter_urls'),
+                                     no_media=self.config.get('filter_media'),
+                                     no_symbols=self.config.get('filter_symbols'),
+                                     no_badwords=self.config.get('filter_parent_badwords', True),
+                                     no_retweets=self.config.get('no_retweets'),
+                                     no_replies=self.config.get('no_replies')
+                                    )
+
+            self.logger.debug('{} is learning'.format(corpus))
+
+            with open(corpus, 'a') as f:
+                f.writelines(tweet + '\n' for tweet in gen)
+
+        except IOError as e:
+            self.logger.error('Learning failed for {}'.format(corpus))
+            self.logger.error(e)
+

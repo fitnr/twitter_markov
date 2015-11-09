@@ -17,8 +17,7 @@ import os
 import sys
 import logging
 import argparse
-import twitter_bot_utils.args as tbu
-from .learn import learn
+import twitter_bot_utils as tbu
 from .twitter_markov import Twitter_markov
 from . import __version__
 
@@ -29,34 +28,32 @@ def main():
     parser.add_argument('-V', '--version', action='version', version="%(prog)s " + __version__)
 
     subparsers = parser.add_subparsers()
-    tweet = subparsers.add_parser(
-        'tweet', parents=[tbu.parent()],
-        description='Post markov chain ("ebooks") tweets to Twitter', usage='%(prog)s [options] SCREEN_NAME')
+    tweeter = subparsers.add_parser('tweet',
+                                    parents=[tbu.args.parent()],
+                                    description='Post markov chain ("ebooks") tweets to Twitter', usage='%(prog)s [options] SCREEN_NAME')
 
-    tweet.add_argument('-r', '--reply', action='store_const', const='reply', dest='action', help='tweet responses to recent mentions')
-    tweet.add_argument('--brain', dest='brains', metavar='BRAIN', type=str, help='cobe .brain file')
-    tweet.add_argument('--no-learn', dest='learn', action='store_false', help='skip learning')
-    tweet.add_argument('screen_name', type=str, metavar='SCREEN_NAME', help='User who will be tweeting')
-    tweet.set_defaults(func=tweet_func, action='tweet')
+    tweeter.add_argument('-r', '--reply', action='store_const', const='reply', dest='action', help='tweet responses to recent mentions')
+    tweeter.add_argument('--corpus', dest='corpora', metavar='corpus', type=str, help='text file, one sentence per line')
+    tweeter.add_argument('--no-learn', dest='learn', action='store_false', help='skip learning (by default, recent tweets are added to CORPUS)')
+    tweeter.add_argument('screen_name', type=str, metavar='SCREEN_NAME', help='User who will be tweeting')
+    tweeter.set_defaults(func=tweet_func, action='tweet')
 
-    learnparser = subparsers.add_parser(
-        'learn', description='Teach a Cobe brain the contents of a Twitter archive',
-        usage="%(prog)s [options] ARCHIVEPATH BRAINPATH")
+    learner = subparsers.add_parser('learn',
+                                    description='Turn a twitter archive into a twitter_markov-ready text file',
+                                    usage="%(prog)s [options] ARCHIVEPATH CORPUSPATH")
 
-    learnparser.add_argument('--no-replies', action='store_true', help='skip replies')
-    learnparser.add_argument('--no-retweets', action='store_true', help='skip retweets')
-    learnparser.add_argument('--no-urls', action='store_true', help='Filter out urls')
-    learnparser.add_argument('--no-media', action='store_true', help='filter out media')
-    learnparser.add_argument('--no-hashtags', action='store_true', help='filter out hashtags')
-    learnparser.add_argument(
-        '--language', type=str, default='english', help='language. Defaults to English')
-    learnparser.add_argument(
-        '--txt', action='store_true', help='Read from a text file, one tweet per line')
-    learnparser.add_argument('-q', '--quiet', action='store_true', help='run quietly')
-    learnparser.add_argument('archive', type=str, metavar='ARCHIVEPATH',
-                             default=os.getcwd(), help='top-level folder of twitter archive')
-    learnparser.add_argument('brainpath', type=str, metavar='BRAINPATH', help='brain file to create')
-    learnparser.set_defaults(func=learn_func)
+    learner.add_argument('--no-replies', action='store_true', help='skip replies')
+    learner.add_argument('--no-retweets', action='store_true', help='skip retweets')
+    learner.add_argument('--no-urls', action='store_true', help='Filter out urls')
+    learner.add_argument('--no-media', action='store_true', help='filter out media')
+    learner.add_argument('--no-hashtags', action='store_true', help='filter out hashtags')
+    learner.add_argument('-q', '--quiet', action='store_true', help='run quietly')
+    learner.add_argument('archive', type=str, metavar='ARCHIVE',
+                         default=os.getcwd(), help='archive csv file (e.g. tweets.csv found in Twitter archive)')
+    learner.add_argument('corpus', type=str, nargs='?', metavar='CORPUS',
+                         help='text file to create', default='/dev/stdout')
+
+    learner.set_defaults(func=learn_func)
 
     args = parser.parse_args()
     func = args.func
@@ -68,7 +65,7 @@ def main():
 
 
 def tweet_func(args):
-    tbu.add_logger(args['screen_name'], args['verbose'])
+    tbu.args.add_logger(args['screen_name'], args['verbose'])
     logger = logging.getLogger(args['screen_name'])
 
     tm = Twitter_markov(**args)
@@ -84,19 +81,20 @@ def tweet_func(args):
 
 def learn_func(args):
     if not args['quiet']:
-        print("Reading from " + args['archive'], file=sys.stderr)
-        print("Teaching " + args['brainpath'], file=sys.stderr)
+        print("Reading " + args['archive'], file=sys.stderr)
 
-    if args['brainpath'][-6:] == '.brain':
-        brainpath = args['brainpath']
+    generator = tbu.archive.read_csv(args.get('archive'))
+
+    if args['corpus'] in ('-', '/dev/stdout'):
+        for tweet in generator:
+            print(tweet.get('text'), file=sys.stdout)
+
     else:
-        brainpath = args['brainpath'] + '.brain'
+        if not args['quiet']:
+            print("Teaching " + args['corpus'], file=sys.stderr)
 
-    count = learn(args['archive'], brainpath, **args)
-
-    if not args['quiet']:
-        print("Taught {0} tweets".format(count))
-
+        with open(args.get('corpus'), 'w') as f:
+            f.writelines(tweet.get('text') + '\n' for tweet in generator)
 
 if __name__ == '__main__':
     main()

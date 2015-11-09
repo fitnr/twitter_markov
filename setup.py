@@ -56,7 +56,7 @@ setup(
     ],
 
     install_requires=[
-        'cobe>=2.1.2, <3',
+        'markovify>=0.2.4,<0.3',
         'python-Levenshtein>=0.12.0, <0.13',
         'pyyaml',
         'tweepy',

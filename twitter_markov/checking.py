@@ -17,6 +17,41 @@ import wordfilter
 import re
 
 
+def generator(strings, **kwargs):
+    '''
+    Returns a generator that returned a filtered input list of strings or tweet-like objects.
+    :no_retweets boolean Exclude retweets (e.g. strings beginning RT) (default False)
+    :no_replies boolean Exclude replies (e.g. strings beginning @screen_name) (default False)
+    :no_mentions boolean Exclude mentions (e.g. strings containing @screen_name) (default False)
+    :no_badwords boolean Exclude derogatory terms for people (default True)
+    :no_urls boolean filter out exclude urls (default False)
+    :no_hashtags boolean filter out hashtags (default False)
+    :no_media boolean filter out media (twitter objects only) (default False)
+    :no_symbols boolean filter out symbols (twitter objects only) (default False)
+    '''
+
+    tweet_checker = construct_tweet_checker(
+        no_retweets=kwargs.get('no_retweets', False),
+        no_replies=kwargs.get('no_replies', False),
+        no_badwords=kwargs.get('no_replies', True)
+    )
+
+    tweet_filter = construct_tweet_filter(
+        no_mentions=kwargs.get('no_mentions', False),
+        no_urls=kwargs.get('no_urls', False),
+        no_media=kwargs.get('no_media', False),
+        no_hashtags=kwargs.get('no_hashtags', False),
+        no_symbols=kwargs.get('no_symbols', False)
+    )
+
+    for status in strings:
+        if not tweet_checker(status):
+            continue
+
+        text = helpers.format_text(tweet_filter(status))
+        yield text
+
+
 def reply_checker(tweet):
     try:
         if tweet.in_reply_to_user_id:
@@ -75,6 +110,7 @@ def wf_checker(tweet):
             pass
 
     return True
+
 
 def construct_tweet_checker(no_retweets=False, no_replies=False, no_badwords=True):
     '''Returns a tweet checker'''
