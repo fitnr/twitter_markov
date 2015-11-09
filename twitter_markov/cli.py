@@ -33,7 +33,7 @@ def main():
                                     description='Post markov chain ("ebooks") tweets to Twitter', usage='%(prog)s [options] SCREEN_NAME')
 
     tweeter.add_argument('-r', '--reply', action='store_const', const='reply', dest='action', help='tweet responses to recent mentions')
-    tweeter.add_argument('--corpus', dest='corpora', metavar='corpus', type=str, help='text file, one sentence per line')
+    tweeter.add_argument('--corpus', dest='corpus', metavar='corpus', type=str, help='text file, one sentence per line')
     tweeter.add_argument('--no-learn', dest='learn', action='store_false', help='skip learning (by default, recent tweets are added to corpus)')
     tweeter.add_argument('screen_name', type=str, metavar='SCREEN_NAME', help='User who will be tweeting')
     tweeter.set_defaults(func=tweet_func, action='tweet')
@@ -70,11 +70,11 @@ def tweet_func(args):
 
     tm = Twitter_markov(**args)
 
-    if args['tweet']:
+    if args['action'] == 'tweet':
         logger.debug('tweeting...')
         tm.tweet()
 
-    if args['reply']:
+    if args['action'] == 'reply':
         logger.debug('replying to all')
         tm.reply_all()
 
