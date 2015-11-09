@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2014-2015 Neil Freeman contact@fakeisthenewreal.org
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +16,7 @@
 from __future__ import unicode_literals, print_function
 import os
 import re
+from random import choice
 from collections import Iterable
 import logging
 import Levenshtein
@@ -42,7 +44,7 @@ class Twitter_markov(object):
 
         self.logger = logging.getLogger(screen_name)
 
-        self.logger.debug('{}, {}, {}'.format(screen_name, corpus, kwargs))
+        self.logger.debug('{}, {}'.format(screen_name, corpus))
 
         try:
             corpus = corpus or self.config.get('corpus')
@@ -173,24 +175,36 @@ class Twitter_markov(object):
         '''Format a tweet with a reply.'''
 
         max_len = min(140, max_len)
-
         model = self.models[model or self.default_model]
 
+        eols = '.?!/:;,'
         text = ''
 
         while True:
-            sentence = model.make_sentence(**kwargs)
+            sent = model.make_sentence(**kwargs)
 
-            if not sentence:
+            if not sent:
                 continue
 
-            if len(text + sentence) < max_len - 1:
-                text = text + ' ' + sentence
+            # convert to unicode in Python 2
+            if hasattr(sent, 'decode'):
+                sent = sent.decode('utf8')
+
+            # Add eol delimiter if one is missing
+            if sent[-1] not in eols and (sent[-2] not in eols and sent[-1] not in u'"\'’”〞❞'):
+                sent = sent + choice('.!?')
+
+            if len(text) + len(sent) < max_len - 1:
+                text = text + ' ' + sent
 
             else:
-                break
-
-        self.logger.debug('text> ' + text)
+                # Check tweet against blacklist and recent tweets
+                if self.check_tweet(text):
+                    # checked out: break and return
+                    break
+                else:
+                    # didn't check out, start over
+                    text = ''
 
         return text
 

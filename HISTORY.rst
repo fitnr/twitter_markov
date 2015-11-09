@@ -5,6 +5,7 @@
 * Also changes `Twitter_markov` API, removing catalyst argument and replacing 'brain' keyword arguments with 'corpus' or 'model'.
 * Replace `twittermarkov learn` with `twittermarkov corpus`
 * Add checking.generator function
+* Restore similarity/blacklist checker for generated text
 
 0.3
 ---
