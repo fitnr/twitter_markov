@@ -69,8 +69,9 @@ class Twitter_markov(object):
 
         self.dry_run = kwargs.get('dry_run', False)
 
+        blacklist = kwargs.get('blacklist') or self.config.get('blacklist', [])
         self.wordfilter = Wordfilter()
-        self.wordfilter.add_words(self.config.get('blacklist', []))
+        self.wordfilter.add_words(blacklist)
 
         if kwargs.get('learn', True):
             self.learn_parent()
