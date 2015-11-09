@@ -34,13 +34,13 @@ def main():
 
     tweeter.add_argument('-r', '--reply', action='store_const', const='reply', dest='action', help='tweet responses to recent mentions')
     tweeter.add_argument('--corpus', dest='corpora', metavar='corpus', type=str, help='text file, one sentence per line')
-    tweeter.add_argument('--no-learn', dest='learn', action='store_false', help='skip learning (by default, recent tweets are added to CORPUS)')
+    tweeter.add_argument('--no-learn', dest='learn', action='store_false', help='skip learning (by default, recent tweets are added to corpus)')
     tweeter.add_argument('screen_name', type=str, metavar='SCREEN_NAME', help='User who will be tweeting')
     tweeter.set_defaults(func=tweet_func, action='tweet')
 
-    learner = subparsers.add_parser('learn',
+    learner = subparsers.add_parser('corpus',
                                     description='Turn a twitter archive into a twitter_markov-ready text file',
-                                    usage="%(prog)s [options] ARCHIVEPATH CORPUSPATH")
+                                    usage="%(prog)s [options] archive corpus")
 
     learner.add_argument('--no-replies', action='store_true', help='skip replies')
     learner.add_argument('--no-retweets', action='store_true', help='skip retweets')
@@ -48,10 +48,10 @@ def main():
     learner.add_argument('--no-media', action='store_true', help='filter out media')
     learner.add_argument('--no-hashtags', action='store_true', help='filter out hashtags')
     learner.add_argument('-q', '--quiet', action='store_true', help='run quietly')
-    learner.add_argument('archive', type=str, metavar='ARCHIVE',
+    learner.add_argument('archive', type=str, metavar='archive',
                          default=os.getcwd(), help='archive csv file (e.g. tweets.csv found in Twitter archive)')
-    learner.add_argument('corpus', type=str, nargs='?', metavar='CORPUS',
-                         help='text file to create', default='/dev/stdout')
+    learner.add_argument('corpus', type=str, nargs='?', metavar='corpus',
+                         help='text file to create (defaults to stdout)', default='/dev/stdout')
 
     learner.set_defaults(func=learn_func)
 
