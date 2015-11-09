@@ -20,6 +20,11 @@ from os import path
 import markovify.text
 from twitter_markov import twitter_markov
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 class tweeter_markov_tests(unittest.TestCase):
 
     def setUp(self):

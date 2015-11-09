@@ -20,6 +20,11 @@ import mock
 import tweepy
 from twitter_markov import twitter_markov
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 TIMELINE = [
     {
         "id": 1235,
