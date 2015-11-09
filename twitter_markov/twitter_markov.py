@@ -45,6 +45,8 @@ class Twitter_markov(object):
         self.logger.debug('{}, {}, {}'.format(screen_name, corpus, kwargs))
 
         try:
+            corpus = corpus or self.config.get('corpus')
+
             if isinstance(corpus, basestring):
                 corpora = [corpus]
 
@@ -52,16 +54,15 @@ class Twitter_markov(object):
                 corpora = corpus
 
             else:
-                corpora = [self.config.get('corpus')] + self.config.get('corpora', [])
-                corpora = [b for b in corpora if b is not None]
+                raise RuntimeError('Unable to find any corpora!')
 
-            self.corpora = corpora
+            self.corpora = [b for b in corpora if b is not None]
             self.logger.debug('corpora: {}'.format(self.corpora))
 
             self.models = self._setup_models(self.corpora)
 
-        except (IOError, IndexError, RuntimeError) as e:
-            self.logger.error('Unable to find any corpora!')
+        except RuntimeError as e:
+            self.logger.error(e)
             raise e
 
         self.logger.debug('models: {0}'.format(list(self.models.keys())))

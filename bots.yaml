@@ -19,7 +19,8 @@ users:
         parent: screen_name
 
         # Location of a text file, with one tweet (or other sentence) per line
-        # This can also be set on the command line
+        # This can also be set on the command line.
+        # This can be a single item or a list
         #
         corpus: tests/data/tweets.txt
 
