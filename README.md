@@ -7,28 +7,26 @@ The audience for this library is those with at least basic Python experience. Be
 
 * A twitter account
 * A twitter application (register at [dev.twitter.com](http://dev.twitter.com)) with authentication keys for the account ([read more](https://dev.twitter.com/oauth))
-* A corpus for the bot to learn, which can be a text file or a Twitter archive. Several thousand lines are needed to get decent results
+* A corpus for the bot to learn, which can be a text file or a Twitter archive. Several thousand lines are needed to get decent results, with fewer than 100 or so it won't work at all.
 
 ## Install
 
 Run `pip install twitter_markov`, or download/clone the package and run `python setup.py install`. Feel free to use a virtualenv, if you're into that.
 
-## Brain Train
+## Corpus Pocus
 
-Train the brain with the `twittermarkov_learn` command.
+"Corpus" is just a fancy-schmancy word for "a bunch of text". `twittermarkov` expects a corpus that's a text file with one tweet per line.
 
-The `twittermarkov_learn` comes with options to ignore replies or retweets, and to filter out mentions, urls, media, and/or hashtags.
+The `twittermarkov corpus` command will create such a file from a Twitter archive, with options to ignore replies or retweets, and to filter out mentions, urls, media, and/or hashtags.
 
 When reading an archive, these arguments use the tweet's metadata to precisely strip the offending content. This may not work well for tweets posted before 2011 or so. For text files or older tweets, a regular expression search is used.
 
 ```bash
-# Usage is twittermarkov_learn ARCHIVE BRAIN
-$ twittermarkov learn twitter/archive/path archive.brain
+# Usage is twittermarkov corpus archive output
+# This creates the file corpus.txt
+twittermarkov corpus twitter/archive/path corpus.txt
 
-# teach the brain from a text file
-$ twittermarkov learn --txt file.txt txt.brain
-
-$ twittermarkov_learn --no-replies twitter/archive/path archive-no-replies.brain
+twittermarkov corpus --no-replies twitter/archive/path corpus-no-replies.txt
 # Text like this will be ignored:
 # @sample I ate a sandwich
 
@@ -36,7 +34,7 @@ $ twittermarkov_learn --no-replies twitter/archive/path archive-no-replies.brain
 # I ate a sandwich with @sample
 ````
 
-If you're using a Twitter archive, the ARCHIVE argument should be the top-level folder of the archive (usually a long name like 16853453_3f21d17c73166ef3c77d7994c880dd93a8159c88). If you have a text file, the argument should be a file name
+If you're using a Twitter archive, the archive argument should be the tweet.csv file found in the archive folder (which usually has a long name like 16853453_3f21d17c73166ef3c77d7994c880dd93a8159c88).
 
 ## Config
 
@@ -65,30 +63,19 @@ Read up on [dev.twitter.com](https://dev.twitter.com/oauth/overview) on obtainin
 
 ## First Tweet
 
-Tweeting is easy. By default, the `twittermarkov` command line application will learn recent tweets from your parent and send one tweet.
-
-After that, use:
-````bash
-$ twittermarkov tweet --no-learn example_screen_name
-````
-
-To have your bot reply to mentions, use:
-````bash
-$ twittermarkov tweet --reply example_screen_name
-````
-
-To have your bot reply to mentions, use:
-
-````bash
-$ twittermarkov tweet --reply example_screen_name
-````
-
-If you don't want to bot to learn from the parent account, use
-````bash
-$ twittermarkov tweet --no-learn example_screen_name
-````
+Once a corpus is set up, the `twittermarkov tweet` command will send tweets out. By default, the command will learn recent tweets from the parent account and send one tweet.
 
 The learning also won't happen if twittermarkov can't find it's previous tweets, which might happen if there are problems with the Twitter API, or your _ebooks account has never tweeted.
+
+Since learning depends on the `_ebooks` account having an existing tweet. So send a first tweet with the `--no-learn` flag.
+````bash
+$ twittermarkov tweet --no-learn example_screen_name
+````
+
+To have your bot reply to mentions, use:
+````bash
+$ twittermarkov tweet --reply example_screen_name
+````
 
 ## Automating
 
@@ -103,14 +90,14 @@ On a *nix system, set up a cron job like so:
 
 If you want to write a script to expand on twitter_markov, you'll find a fairly simple set of tools.
 
-_class twitter_markov.Twitter_markov(screen_name, brains=None, config=None, api=None)_
+_class twitter_markov.Twitter_markov(screen_name, corpus=None, config=None, api=None)_
 
 * screen_name - Twitter user account
-* brains - Path to a brain file, or a list of paths. If omitted, Twitter_markov looks in its config for a `brains` entry.
+* corpus - Path to a corpus file, or a list of paths. If omitted, Twitter_markov looks in its config for `corpus` and/or `corpora` entries.
 * config - A dictionary of configuration settings. But default, twitter_markov will try to read this from the bots.yaml file (see above)/
 * api - A tweepy-like API object. In the twitter_markov class, this is a `twitter_bot_utils.API` object.
 
-The first brain in brains (or in the config file) will be the default brain.
+The first corpus in the found corpora (or in the config file) will be the default. When using the class with more than corpus, you can specify a corpus with the `model` keyword argument using the basename of the given file, e.g. "special.txt" for the corpus stored at "dir/special.txt".
 
 Properties:
 * recently_tweeted - A list of the 20 (or `config['checkback']`) most recent tweets from `self.screen_name`.
@@ -118,9 +105,9 @@ Properties:
 Methods:
 
 * `check_tweet(text)`: Check if a string contains blacklisted words or is similar to a recent tweet.
-* `reply(status, brainname=None): Compose a reply to the given `tweepy.Status`. Brainname could refer to the filename of a given brain (for instance, "special" for the brain stored at "dir/special.brain").
-* `reply_all(brainname=None)`: Reply to all mentions since the last time `self.screen_name` sent a reply tweet.
-* `compose(catalyst='', brainname=None, max_len=140)`: Returns a string generated "brainname" (or the default brain).
-* `tweet(catylyst='', brainname=None)`: Post a tweet composed by giving "catalyst" to "brainname" (or the default brain).
-* `learn_parent(brainname=None)`: Learn recent tweets (since the last time `self.screen_name` tweeted) by the parent account. This is subject to the filters described in `bots.yaml`.
+* `reply(status, model=None): Compose a reply to the given `tweepy.Status`.
+* `reply_all(model=None)`: Reply to all mentions since the last time `self.screen_name` sent a reply tweet.
+* `compose(model=None, max_len=140)`: Returns a string generated from "model" (or the default model).
+* `tweet(model=None)`: Post a tweet composed by "model" (or the default model).
+* `learn_parent(corpus=None, model=None)`: Add recent tweets from the parent account (since the last time `self.screen_name` tweeted) to the corpus. This is subject to the filters described in `bots.yaml`.
 

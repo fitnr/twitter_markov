@@ -14,23 +14,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
 import unittest
 from os import path
-import mock
-from cobe.brain import Brain
+import markovify.text
 from twitter_markov import twitter_markov
 
 class tweeter_markov_tests(unittest.TestCase):
 
     def setUp(self):
-        self.brainfile = path.join(path.dirname(__file__), 'data', 'test.brain')
+        self.corpus = path.join(path.dirname(__file__), 'data', 'tweets.txt')
         self.configfile = path.join(path.dirname(__file__), '..', 'bots.yaml')
 
-        brain = Brain(self.brainfile)
-        del brain
 
     def testTwitterMarkovAttribs(self):
-        tm = twitter_markov.Twitter_markov('example_screen_name', self.brainfile,
+        tm = twitter_markov.Twitter_markov('example_screen_name', self.corpus,
                                            config=self.configfile, dry_run=True, learn=False)
 
         assert type(tm) == twitter_markov.Twitter_markov
@@ -39,20 +37,33 @@ class tweeter_markov_tests(unittest.TestCase):
         assert hasattr(tm, 'api')
         assert hasattr(tm, 'config')
         assert hasattr(tm, 'wordfilter')
-        assert hasattr(tm, 'brains')
         del tm
 
-    def testTwitterMarkovConfigBrain(self):
+    def testTwitterMarkovConfigCorpus(self):
         tm = twitter_markov.Twitter_markov('example_screen_name', config=self.configfile,
                                            dry_run=True, learn=False)
         assert type(tm) == twitter_markov.Twitter_markov
         del tm
 
-    def testTwitterMarkovListBrain(self):
-        tm = twitter_markov.Twitter_markov('example_screen_name', [self.brainfile], config=self.configfile,
+    def testTwitterMarkovListCorpus(self):
+        tm = twitter_markov.Twitter_markov('example_screen_name', [self.corpus], config=self.configfile,
                                            dry_run=True, learn=False)
         assert type(tm) == twitter_markov.Twitter_markov
         del tm
 
     def testTwitterMarkovErrors(self):
-        self.assertRaises(IOError, twitter_markov.Twitter_markov, 'example_screen_name', 'foo.brain')
+        self.assertRaises(IOError, twitter_markov.Twitter_markov, 'example_screen_name', 'foo')
+
+    def testTwitterMarkovModel(self):
+        tm = twitter_markov.Twitter_markov('example_screen_name', self.corpus,
+                                           config=self.configfile, dry_run=True, learn=False)
+
+        assert isinstance(tm.models['tweets.txt'], markovify.text.Text)
+
+        string = tm.compose(tries=50, max_overlap_ratio=2, max_overlap_total=100)
+        assert isinstance(string, basestring)
+        assert len(string) > 0
+
+
+if __name__ == '__main__':
+    unittest.main()

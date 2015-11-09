@@ -16,7 +16,6 @@
 
 import unittest
 from os import path
-from twitter_markov import learn
 from twitter_markov import checking
 from twitter_bot_utils import archive
 
@@ -63,9 +62,10 @@ class tweeter_markov_tests(unittest.TestCase):
         api = tweepy.API()
         self.status = tweepy.Status.parse(api, TWEET)
 
-        self.txtfile = path.join(path.dirname(__file__), 'data', 'tweets.txt')
+        with open(path.join(path.dirname(__file__), 'data', 'tweets.txt')) as f:
+            self.txt = f.readlines()
 
-        self.archive = path.join(path.dirname(__file__), 'data')
+        self.archive = archive.read_csv(path.join(path.dirname(__file__), 'data'))
 
     def test_mention_filter(self):
         mention_filter = checking.construct_tweet_filter(no_mentions=True)
@@ -80,21 +80,21 @@ class tweeter_markov_tests(unittest.TestCase):
         assert reply_filter(self.status) is False
 
     def test_reply_filtering_txtfile(self):
-        generator = learn.tweet_generator(self.txtfile, txt=1, no_replies=1)
-        assert len(list(generator)) == 3
+        generator = checking.generator(self.txt, txt=1, no_replies=1)
+        self.assertEqual(len(list(generator)), 99)
 
     def test_reply_filtering_archive(self):
-        generator = learn.tweet_generator(self.archive, no_replies=1)
-        self.assertEqual(len(list(generator)), 2)
+        generator = checking.generator(self.archive, no_replies=1)
+        self.assertEqual(len(list(generator)), 98)
 
     def test_rt_filtering(self):
-        generator = learn.tweet_generator(self.txtfile, txt=1, no_retweets=1)
-        self.assertEqual(len(list(generator)), 3)
+        generator = checking.generator(self.txt, txt=1, no_retweets=1)
+        self.assertEqual(len(list(generator)), 99)
 
     def test_rt_filtering_archive(self):
-        generator = learn.tweet_generator(self.archive, no_retweets=1)
+        generator = checking.generator(self.archive, no_retweets=1)
         lis = list(generator)
-        self.assertEqual(len(lis), 2)
+        self.assertEqual(len(lis), 98)
 
     def test_rt_checking(self):
         checker = checking.construct_tweet_checker(no_retweets=True)
@@ -106,7 +106,7 @@ class tweeter_markov_tests(unittest.TestCase):
         assert checker('RT @hello There') == True
         assert checker('@hello There') == False
 
-        lst = list(archive.read_csv(self.archive))
+        lst = list(self.archive)
         rt = [t for t in lst if t['tweet_id'] == '651607152713433089'][0]
 
         assert checker(rt) == True
@@ -114,4 +114,3 @@ class tweeter_markov_tests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

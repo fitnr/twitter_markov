@@ -13,12 +13,11 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from __future__ import unicode_literals
 import unittest
 from os import path
 import mock
 import tweepy
-from cobe.brain import Brain
 from twitter_markov import twitter_markov
 
 TIMELINE = [
@@ -58,27 +57,26 @@ class tweeter_markov_tests(unittest.TestCase):
 
     @mock.patch.object(tweepy.API, 'user_timeline', return_value=fake_timeline())
     def setUp(self, _):
-        self.brainfile = path.join(path.dirname(__file__), 'data', 'test.brain')
+        self.corpus = path.join(path.dirname(__file__), 'data', 'tweets.txt')
         self.configfile = path.join(path.dirname(__file__), '..', 'bots.yaml')
 
-        brain = Brain(self.brainfile)
-        del brain
 
-        self.tm = twitter_markov.Twitter_markov('example_screen_name', [self.brainfile], config=self.configfile,
-                                                dry_run=True)
+        self.tm = twitter_markov.Twitter_markov('example_screen_name', [self.corpus], config=self.configfile,
+                                                dry_run=True, learn=False)
 
     def testTwitterMarkovCompose(self):
-        response = self.tm.compose()
+        response = self.tm.compose(tries=150, max_overlap_ratio=2, max_overlap_total=100)
 
-        self.assertEqual(type(response), unicode)
+        assert isinstance(response, basestring)
         assert len(response) < 140
 
         tweeted = self.tm.tweet()
         assert tweeted == None
 
     @mock.patch.object(tweepy.API, 'mentions_timeline', return_value=fake_timeline())
-    def testTwitterMarkovReply(self, _):
-        r = self.tm.reply_all()
+    @mock.patch.object(tweepy.API, 'user_timeline', return_value=fake_timeline())
+    def testTwitterMarkovReply(self, *_):
+        r = self.tm.reply_all(tries=75, max_overlap_ratio=2, max_overlap_total=100)
         assert r == None
 
     @mock.patch.object(tweepy.API, 'user_timeline', return_value=fake_timeline())
