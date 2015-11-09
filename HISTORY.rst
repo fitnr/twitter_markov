@@ -1,3 +1,11 @@
+0.4
+---
+
+* Replace `cobe` with `markovify`. This simplifies learning, since it's just adding to a text file corpus.
+* Also changes `Twitter_markov` API, removing catalyst argument and replacing 'brain' keyword arguments with 'corpus' or 'model'.
+* Replace `twittermarkov learn` with `twittermarkov corpus`
+* Add checking.generator function
+
 0.3
 ---
 

@@ -25,7 +25,7 @@ except IOError:
 setup(
     name='twitter_markov',
 
-    version="0.3.3",
+    version="0.4.0",
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
