@@ -16,3 +16,8 @@
 
 README.rst: README.md
 	pandoc $< -o $@ || cp $< $@
+
+cov:
+	coverage run --include="twitter_markov/*" setup.py test
+	coverage html
+	open htmlcov/index.html
