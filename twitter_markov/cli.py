@@ -17,6 +17,7 @@
 from __future__ import unicode_literals, print_function
 import os
 import sys
+from signal import signal, SIGPIPE, SIG_DFL
 import logging
 import argparse
 import twitter_bot_utils as tbu
@@ -44,8 +45,8 @@ def main():
                                     description='Turn a twitter archive into a twitter_markov-ready text file',
                                     usage="%(prog)s [options] archive corpus")
 
-    learner.add_argument('--no-replies', action='store_true', help='skip replies')
     learner.add_argument('--no-retweets', action='store_true', help='skip retweets')
+    learner.add_argument('--no-replies', action='store_true', help='filter out replies')
     learner.add_argument('--no-mentions', action='store_true', help='filter out mentions')
     learner.add_argument('--no-urls', action='store_true', help='filter out urls')
     learner.add_argument('--no-media', action='store_true', help='filter out media')
@@ -53,8 +54,8 @@ def main():
     learner.add_argument('-q', '--quiet', action='store_true', help='run quietly')
     learner.add_argument('archive', type=str, metavar='archive',
                          default=os.getcwd(), help='archive csv file (e.g. tweets.csv found in Twitter archive)')
-    learner.add_argument('corpus', type=str, nargs='?', metavar='corpus',
-                         help='text file to create (defaults to stdout)', default='/dev/stdout')
+    learner.add_argument('-o', type=str, dest='output', metavar='corpus',
+                         help='output text file (defaults to stdout)', default='/dev/stdout')
 
     learner.set_defaults(func=learn_func)
 
@@ -86,18 +87,20 @@ def learn_func(args):
     if not args['quiet']:
         print("Reading " + args['archive'], file=sys.stderr)
 
-    generator = checking.generator(tbu.archive.read_csv(args.get('archive')), **args)
+    archive = tbu.archive.read_csv(args.get('archive'))
+    gen = checking.generator(archive, **args)
+    tweets = ((tweet + '\n').encode('utf-8') for tweet in gen)
 
-    if args['corpus'] in ('-', '/dev/stdout'):
-        for tweet in generator:
-            print(tweet.get('text'), file=sys.stdout)
+    if args['output'] in ('-', '/dev/stdout'):
+        signal(SIGPIPE, SIG_DFL)
+        sys.stdout.writelines(tweets)
 
     else:
         if not args['quiet']:
-            print("Teaching " + args['corpus'], file=sys.stderr)
+            print("Writing " + args['output'], file=sys.stderr)
 
-        with open(args.get('corpus'), 'w') as f:
-            f.writelines([(tweet + '\n').encode('utf-8') for tweet in generator])
+        with open(args.get('output'), 'w') as f:
+            f.writelines(tweets)
 
 if __name__ == '__main__':
     main()

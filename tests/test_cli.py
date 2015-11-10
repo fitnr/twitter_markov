@@ -28,7 +28,7 @@ class TestMarkovCLI(unittest.TestCase):
     def testcli(self):
         target = path.join(path.dirname(self.archivepath), 'tmp.txt')
 
-        sys.argv = ['twittermarkov', 'corpus', self.archivepath, target]
+        sys.argv = ['twittermarkov', 'corpus', self.archivepath, '-o', target]
 
         cli.main()
 
