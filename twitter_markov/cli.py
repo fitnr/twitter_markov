@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # Copyright 2014-2015 Neil Freeman contact@fakeisthenewreal.org
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +21,7 @@ import logging
 import argparse
 import twitter_bot_utils as tbu
 from . import TwitterMarkov
+from . import checking
 from . import __version__ as version
 
 
@@ -35,7 +38,6 @@ def main():
     tweeter.add_argument('-r', '--reply', action='store_const', const='reply', dest='action', help='tweet responses to recent mentions')
     tweeter.add_argument('--corpus', dest='corpus', metavar='corpus', type=str, help='text file, one sentence per line')
     tweeter.add_argument('--no-learn', dest='learn', action='store_false', help='skip learning (by default, recent tweets are added to corpus)')
-    tweeter.add_argument('screen_name', type=str, metavar='SCREEN_NAME', help='User who will be tweeting')
     tweeter.set_defaults(func=tweet_func, action='tweet')
 
     learner = subparsers.add_parser('corpus',
@@ -44,7 +46,8 @@ def main():
 
     learner.add_argument('--no-replies', action='store_true', help='skip replies')
     learner.add_argument('--no-retweets', action='store_true', help='skip retweets')
-    learner.add_argument('--no-urls', action='store_true', help='Filter out urls')
+    learner.add_argument('--no-mentions', action='store_true', help='filter out mentions')
+    learner.add_argument('--no-urls', action='store_true', help='filter out urls')
     learner.add_argument('--no-media', action='store_true', help='filter out media')
     learner.add_argument('--no-hashtags', action='store_true', help='filter out hashtags')
     learner.add_argument('-q', '--quiet', action='store_true', help='run quietly')
@@ -83,7 +86,7 @@ def learn_func(args):
     if not args['quiet']:
         print("Reading " + args['archive'], file=sys.stderr)
 
-    generator = tbu.archive.read_csv(args.get('archive'))
+    generator = checking.generator(tbu.archive.read_csv(args.get('archive')), **args)
 
     if args['corpus'] in ('-', '/dev/stdout'):
         for tweet in generator:
@@ -94,7 +97,7 @@ def learn_func(args):
             print("Teaching " + args['corpus'], file=sys.stderr)
 
         with open(args.get('corpus'), 'w') as f:
-            f.writelines(tweet.get('text') + '\n' for tweet in generator)
+            f.writelines([(tweet + '\n').encode('utf-8') for tweet in generator])
 
 if __name__ == '__main__':
     main()

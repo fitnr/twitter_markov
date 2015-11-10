@@ -22,7 +22,7 @@ def generator(strings, **kwargs):
     Returns a generator that returned a filtered input list of strings or tweet-like objects.
     :no_retweets boolean Exclude retweets (e.g. strings beginning RT) (default False)
     :no_replies boolean Exclude replies (e.g. strings beginning @screen_name) (default False)
-    :no_mentions boolean Exclude mentions (e.g. strings containing @screen_name) (default False)
+    :no_mentions boolean Filter out mentions (e.g. strings containing @screen_name) (default False)
     :no_badwords boolean Exclude derogatory terms for people (default True)
     :no_urls boolean filter out exclude urls (default False)
     :no_hashtags boolean filter out hashtags (default False)
