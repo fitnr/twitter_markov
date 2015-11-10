@@ -75,6 +75,16 @@ class tweeter_markov_tests(unittest.TestCase):
         retweet_filter = checking.construct_tweet_checker(no_retweets=True)
         assert retweet_filter(self.status)
 
+    def testLinkFilter(self):
+        link_filter = checking.construct_tweet_filter(no_urls=True)
+
+        assert link_filter('http://happiness.com/ is https://illusory.co') == ' is '
+
+    def testHashFilter(self):
+        hash_filter = checking.construct_tweet_filter(no_hashtags=True)
+
+        assert hash_filter('#happiness is #illusory') == ' is '
+
     def test_reply_filter(self):
         reply_filter = checking.construct_tweet_checker(no_replies=True)
         assert reply_filter(self.status) is False

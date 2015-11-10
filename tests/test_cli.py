@@ -19,16 +19,20 @@ from twitter_markov import cli
 from twitter_bot_utils import archive
 import sys
 from os import path, remove
+import subprocess
+
 
 class TestMarkovCLI(unittest.TestCase):
 
     def setUp(self):
         self.archivepath = path.join(path.dirname(__file__), 'data', 'tweets.csv')
+        
+        self.argv = ['twittermarkov', 'corpus', self.archivepath]
 
     def testcli(self):
         target = path.join(path.dirname(self.archivepath), 'tmp.txt')
 
-        sys.argv = ['twittermarkov', 'corpus', self.archivepath, '-o', target]
+        sys.argv = self.argv + ['-o', target]
 
         cli.main()
 
@@ -41,6 +45,22 @@ class TestMarkovCLI(unittest.TestCase):
 
         finally:
             remove(target)
+
+    def testcliStdout(self):
+        p = subprocess.Popen(self.argv, stdout=subprocess.PIPE)
+        out, err = p.communicate()
+
+        self.assertIsNone(err, 'err is None')
+        self.assertIsNotNone(out, 'out is not None')
+
+        sample = 'He could speak a little Spanish, and also a language which nobody understood'
+
+        try:
+            self.assertIn(sample, out)
+
+        except (TypeError, AssertionError):
+            self.assertIn(sample, out.decode())
+
 
 if __name__ == '__main__':
     unittest.main()

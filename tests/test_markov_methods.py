@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 import unittest
+import os
 from os import path
 import mock
 import tweepy
@@ -100,3 +101,19 @@ class tweeter_markov_tests(unittest.TestCase):
         assert self.tm.check_tweet('Lorem ipsum dolor set namet') == False
         assert self.tm.check_tweet('Random Text that should work totally') == True
         assert self.tm.check_tweet('@reply Random Text') == True
+
+    @mock.patch.object(tweepy.API, 'user_timeline', return_value=fake_timeline())
+    def testTwitterMarkovLearn(self, _):
+        tmp = path.join(path.dirname(__file__), 'data', 'tmp.txt')
+        self.tm.learn_parent(corpus=tmp)
+
+        try:
+            with open(tmp) as f:
+                result = f.read()
+
+                assert TIMELINE[0]['text'] in result
+                assert TIMELINE[1]['text'] in result
+                assert TIMELINE[2]['text'] in result
+
+        finally:
+            os.remove(tmp)

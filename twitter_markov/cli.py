@@ -89,7 +89,7 @@ def learn_func(args):
 
     archive = tbu.archive.read_csv(args.get('archive'))
     gen = checking.generator(archive, **args)
-    tweets = ((tweet + '\n').encode('utf-8') for tweet in gen)
+    tweets = ((tweet + '\n') for tweet in gen)
 
     if args['output'] in ('-', '/dev/stdout'):
         signal(SIGPIPE, SIG_DFL)
