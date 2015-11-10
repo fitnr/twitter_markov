@@ -7,6 +7,7 @@
 * Add checking.generator function
 * Restore similarity/blacklist checker for generated text
 * rename class from Twitter_markov to TwitterMarkov
+* Rework cli tools, renaming twittermarkov learn -> twittermarkov corpus
 
 0.3
 ---

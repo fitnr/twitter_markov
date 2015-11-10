@@ -1,4 +1,4 @@
-twitter_markov
+twitter markov
 ==============
 
 Create markov chain ("_ebooks") accounts on Twitter
@@ -26,13 +26,21 @@ When reading an archive, these arguments use the tweet's metadata to precisely s
 # This creates the file corpus.txt
 twittermarkov corpus twitter/archive/path corpus.txt
 
-twittermarkov corpus --no-replies twitter/archive/path corpus-no-replies.txt
-# Text like this will be ignored:
-# @sample I ate a sandwich
+twittermarkov corpus --no-retweets --no-replies twitter/archive/path corpus-no-replies.txt
+# Teweets like this will be ignored:
+# RT @sample I ate a sandwich
 
-# Text like this will be read in:
-# I ate a sandwich with @sample
+# Tweets like this will be read in without the @sample:
+# @sample Was it tasty?
 ````
+
+All the filtering options:
+* `--no-retweets` - skip retweets
+* `--no-replies` - filter out replies (keeps the tweet, just removes the starting username)
+* `--no-mentions` - filter out mentions
+* `--no-urls` - filter out urls
+* `--no-media` - filter out media
+* `--no-hashtags` - filter out hashtags
 
 If you're using a Twitter archive, the archive argument should be the tweet.csv file found in the archive folder (which usually has a long name like 16853453_3f21d17c73166ef3c77d7994c880dd93a8159c88).
 
@@ -67,14 +75,14 @@ Once a corpus is set up, the `twittermarkov tweet` command will send tweets out.
 
 The learning also won't happen if twittermarkov can't find it's previous tweets, which might happen if there are problems with the Twitter API, or your _ebooks account has never tweeted.
 
-Since learning depends on the `_ebooks` account having an existing tweet. So send a first tweet with the `--no-learn` flag.
+Since learning depends on the `_ebooks` account having an existing tweet, send a first tweet with the `--no-learn` flag.
 ````bash
-$ twittermarkov tweet --no-learn example_screen_name
+twittermarkov tweet --no-learn example_screen_name
 ````
 
 To have your bot reply to mentions, use:
 ````bash
-$ twittermarkov tweet --reply example_screen_name
+twittermarkov tweet --reply example_screen_name
 ````
 
 ## Automating

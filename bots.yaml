@@ -27,11 +27,11 @@ users:
         # How many tweets should we check to make sure we're not repeating something we already tweeted?
         checkback: 100
 
-        # this improves the bot a bit. Possible values are:
-        # danish, dutch, english, finnish, french, german, hungarian, italian, norwegian
-        # portuguese, romanian, russian, spanish, swedish, or turkish
+        # This determines how long of a phrase the markov chain be working with.
+        # Higher values are slower and hew closer to the corpus
+        # Lower values are faster and more oddball
         #
-        language: english
+        state_size: 3
 
         # Words to never tweet
         # These will be added to a built-in blacklist, taken from https://github.com/dariusk/wordfilter
@@ -40,14 +40,14 @@ users:
             - badword
             - evilword
 
-        # With these set to True, the brain won't tweet these types or learn them from its parent
+        # With these set to True, we won't tweet these types or learn them from its parent
         #
         no_retweets: False
         no_replies: False
 
         # With these set, these types of tweets won't be tweeted
-        # They will still be fed into the brain, they will just
-        # be filtered out of the brain's results
+        # They will still be fed into the corpus, they will just
+        # be filtered out of results
         #
         no_hashtags: False
         no_urls: False
@@ -56,10 +56,10 @@ users:
         no_symbols: False
 
         # With these set, the text will be stripped of these entities before being fed to the brain
-        # For instance, of filter_hashtags is set,
+        # For instance, if filter_hashtags is set,
         # "What's Going On #lemonheads" will be fed to the brain as:
         # ""What's Going On"
-        # Take care. changing the corpus before feeding the brain can lead to strange results.
+        # Take care. Changing the corpus in this way can lead to strange results.
         #
         filter_hashtags: False
         filter_media: False
