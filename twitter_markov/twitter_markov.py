@@ -61,7 +61,9 @@ class TwitterMarkov(object):
             self.corpora = [b for b in corpora if b is not None]
             self.logger.debug('corpora: {}'.format(self.corpora))
 
-            self.models = self._setup_models(self.corpora)
+            state_size = kwargs.get('state_size', self.config.get('state_size'))
+
+            self.models = self._setup_models(self.corpora, state_size)
 
         except RuntimeError as e:
             self.logger.error(e)
@@ -78,7 +80,7 @@ class TwitterMarkov(object):
         if kwargs.get('learn', True):
             self.learn_parent()
 
-    def _setup_models(self, corpora):
+    def _setup_models(self, corpora, state_size):
         """
         Given a list of paths to corpus text files, set up markovify models for each.
         These models are returned in a dict, (with the basename as key).
@@ -86,13 +88,15 @@ class TwitterMarkov(object):
         self.logger.debug('setting up models')
         out = dict()
 
+        state_size = state_size or 3
+
         try:
             for pth in corpora:
                 corpus_path = os.path.expanduser(pth)
                 name = os.path.basename(corpus_path)
 
                 with open(corpus_path) as m:
-                    out[name] = markovify.text.NewlineText(m.read(), state_size=3)
+                    out[name] = markovify.text.NewlineText(m.read(), state_size=state_size)
 
         except AttributeError as e:
             self.logger.error(e)
