@@ -15,7 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 README.rst: README.md
-	pandoc $< -o $@ || cp $< $@
+	- pandoc $< -o $@
+	@touch $@
+	python setup.py check --restructuredtext --strict
 
 cov:
 	coverage run --include="twitter_markov/*" setup.py test

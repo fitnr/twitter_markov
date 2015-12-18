@@ -66,7 +66,7 @@ setup(
         'python-Levenshtein>=0.12.0, <0.13',
         'pyyaml',
         'tweepy',
-        'twitter_bot_utils>=0.9.7, <0.10',
+        'twitter_bot_utils>=0.9.7.1, <0.10',
         'wordfilter>=0.1.8, <0.2.0'
     ],
 
