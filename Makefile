@@ -13,6 +13,16 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+.PHONY: deploy cov
+
+deploy: README.rst
+	rm -rf dist build
+	python3 setup.py sdist bdist_wheel
+	rm -rf dist build
+	python setup.py sdist
+	twine upload dist/*
+	git push
+	git push --tags
 
 README.rst: README.md
 	- pandoc $< -o $@
