@@ -44,7 +44,7 @@ class TwitterMarkov(object):
 
         self.logger = logging.getLogger(screen_name)
 
-        self.logger.debug('{}, {}'.format(screen_name, corpus))
+        self.logger.debug('%s, %s', screen_name, corpus)
 
         try:
             corpus = corpus or self.config.get('corpus')
@@ -59,7 +59,7 @@ class TwitterMarkov(object):
                 raise RuntimeError('Unable to find any corpora!')
 
             self.corpora = [b for b in corpora if b is not None]
-            self.logger.debug('corpora: {}'.format(self.corpora))
+            self.logger.debug('corpora: %s', self.corpora)
 
             state_size = kwargs.get('state_size', self.config.get('state_size'))
 
@@ -69,7 +69,7 @@ class TwitterMarkov(object):
             self.logger.error(e)
             raise e
 
-        self.logger.debug('models: {0}'.format(list(self.models.keys())))
+        self.logger.debug('models: %s', list(self.models.keys()))
 
         self.dry_run = kwargs.get('dry_run', False)
 
@@ -105,7 +105,7 @@ class TwitterMarkov(object):
 
         except IOError as e:
             self.logger.error(e)
-            self.logger.error('Error reading {}'.format(corpus_path))
+            self.logger.error('Error reading %s', corpus_path)
             raise e
 
         self.default_model = os.path.basename(corpora[0])
@@ -144,7 +144,7 @@ class TwitterMarkov(object):
 
     def reply_all(self, model=None, **kwargs):
         mentions = self.api.mentions_timeline(since_id=self.api.last_reply)
-        self.logger.debug('{0} mentions found'.format(len(mentions)))
+        self.logger.debug('%s mentions found', len(mentions))
 
         for status in mentions:
             self.reply(status, model, **kwargs)
@@ -235,12 +235,12 @@ class TwitterMarkov(object):
                                      no_replies=self.config.get('no_replies')
                                     )
 
-            self.logger.debug('{} is learning'.format(corpus))
+            self.logger.debug('%s is learning', corpus)
 
             with open(corpus, 'a') as f:
                 f.writelines(tweet + '\n' for tweet in gen)
 
         except IOError as e:
-            self.logger.error('Learning failed for {}'.format(corpus))
+            self.logger.error('Learning failed for %s', corpus)
             self.logger.error(e)
 
