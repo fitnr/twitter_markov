@@ -108,18 +108,28 @@ class tweeter_markov_tests(unittest.TestCase):
 
     def test_rt_checking(self):
         checker = checking.construct_tweet_checker(no_retweets=True)
-        assert checker('RT @hello There') == False
-        assert checker('@hello There') == True
+        assert checker('RT @hello There') is False
+        assert checker('@hello There') is True
 
     def test_reply_checking(self):
         checker = checking.construct_tweet_checker(no_replies=True)
-        assert checker('RT @hello There') == True
-        assert checker('@hello There') == False
+        assert checker('RT @hello There') is True
+        assert checker('@hello There') is False
 
         lst = list(self.archive)
         rt = [t for t in lst if t['tweet_id'] == '651607152713433089'][0]
 
-        assert checker(rt) == True
+        assert checker(rt) is True
+
+    def testCheckingReturnStatus(self):
+        generator = checking.generator([self.status] * 2, return_status=True)
+        assert isinstance(next(generator), tweepy.Status)
+
+        generator = checking.generator([self.status] * 2, return_status=False)
+        self.assertTrue(isinstance(next(generator), unicode))
+
+        generator = checking.generator(self.archive, return_status=True)
+        self.assertTrue(isinstance(next(generator), dict))
 
 
 if __name__ == '__main__':

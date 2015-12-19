@@ -17,9 +17,12 @@ from twitter_bot_utils import helpers
 import wordfilter
 
 
-def generator(strings, **kwargs):
+def generator(tweets, return_status=None, **kwargs):
     '''
-    Returns a generator that returned a filtered input list of strings or tweet-like objects.
+    Returns a generator that returned a filtered input iterable of tweets or
+    tweet-like objects (tweepy.Status objects or dictionaries).
+    :tweets iterable
+    :return_status boolean If true, returns entire status with modified test
     :no_retweets boolean Exclude retweets (e.g. strings beginning RT) (default False)
     :no_replies boolean Exclude replies (e.g. strings beginning @screen_name) (default False)
     :no_mentions boolean Filter out mentions (e.g. strings containing @screen_name) (default False)
@@ -44,11 +47,20 @@ def generator(strings, **kwargs):
         no_symbols=kwargs.get('no_symbols', False)
     )
 
-    for status in strings:
+    for status in tweets:
         if not tweet_checker(status):
             continue
 
         text = helpers.format_text(tweet_filter(status))
+
+        if return_status:
+            try:
+                status.text = text
+            except AttributeError:
+                status['text'] = text
+
+            yield status
+
         yield text
 
 
