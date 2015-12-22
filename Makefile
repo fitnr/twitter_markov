@@ -15,10 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 .PHONY: deploy cov
 
-deploy: README.rst
-	rm -rf dist build
+deploy: README.rst | clean
+	python setup.py register
 	python3 setup.py sdist bdist_wheel
-	rm -rf dist build
+	$(MAKE) clean
 	python setup.py sdist
 	twine upload dist/*
 	git push
@@ -28,6 +28,8 @@ README.rst: README.md
 	- pandoc $< -o $@
 	@touch $@
 	python setup.py check --restructuredtext --strict
+
+clean:; rm -rf dist build
 
 cov:
 	coverage run --include="twitter_markov/*" setup.py test
