@@ -18,7 +18,6 @@ from __future__ import unicode_literals, print_function
 import os
 import sys
 from signal import signal, SIGPIPE, SIG_DFL
-import logging
 import argparse
 import twitter_bot_utils as tbu
 from . import TwitterMarkov
@@ -69,17 +68,12 @@ def main():
 
 
 def tweet_func(args):
-    tbu.args.add_logger(args['screen_name'], args['verbose'])
-    logger = logging.getLogger(args['screen_name'])
-
     tm = TwitterMarkov(**args)
 
     if args['action'] == 'tweet':
-        logger.debug('tweeting...')
         tm.tweet()
 
-    if args['action'] == 'reply':
-        logger.debug('replying to all')
+    elif args['action'] == 'reply':
         tm.reply_all()
 
 

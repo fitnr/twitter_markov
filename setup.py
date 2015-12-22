@@ -62,12 +62,12 @@ setup(
     zip_safe=True,
 
     install_requires=[
+        'twitter_bot_utils>=0.10.0,<11',
         'markovify>=0.2.4,<0.3',
         'python-Levenshtein>=0.12.0, <0.13',
+        'wordfilter>=0.1.8, <0.2.0'
         'pyyaml',
         'tweepy',
-        'twitter_bot_utils>=0.9.7.1, <0.10',
-        'wordfilter>=0.1.8, <0.2.0'
     ],
 
     test_suite='tests',

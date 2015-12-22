@@ -18,7 +18,6 @@ import os
 import re
 from random import choice
 from collections import Iterable
-import logging
 import Levenshtein
 import markovify.text
 import twitter_bot_utils as tbu
@@ -38,11 +37,11 @@ class TwitterMarkov(object):
 
         self.screen_name = screen_name
 
-        self.api = kwargs.get('api', tbu.api.API(screen_name, **kwargs))
+        self.api = kwargs.get('api', tbu.API(screen_name, **kwargs))
 
         self.config = self.api.config
 
-        self.logger = logging.getLogger(screen_name)
+        self.logger = self.api.logger
 
         self.logger.debug('%s, %s', screen_name, corpus)
 
@@ -144,6 +143,7 @@ class TwitterMarkov(object):
 
     def reply_all(self, model=None, **kwargs):
         mentions = self.api.mentions_timeline(since_id=self.api.last_reply)
+        self.logger.info('%replying to all...')
         self.logger.debug('%s mentions found', len(mentions))
 
         for status in mentions:
@@ -164,7 +164,7 @@ class TwitterMarkov(object):
         self._update(reply, in_reply=status.id_str)
 
     def tweet(self, model=None, **kwargs):
-        self.logger.debug('tweeting')
+        self.logger.info('Composing a tweet...')
 
         text = self.compose(model, **kwargs)
 
