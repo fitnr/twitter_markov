@@ -25,24 +25,34 @@ from . import checking
 from . import __version__ as version
 
 
+TWEETER_DESC = 'Post markov chain ("ebooks") tweets to Twitter'
+
+LEARNER_DESC = 'Turn a twitter archive into a twitter_markov-ready text file'
+
+
 def main():
-    parser = argparse.ArgumentParser('twittermarkov', description='Tweet with a markov bot, or teach it from a twitter archive.')
+    parser = argparse.ArgumentParser(
+        'twittermarkov', description='Tweet with a markov bot, or teach it from a twitter archive.')
 
     parser.add_argument('-V', '--version', action='version', version="%(prog)s " + version)
 
     subparsers = parser.add_subparsers()
-    tweeter = subparsers.add_parser('tweet',
-                                    parents=[tbu.args.parent()],
-                                    description='Post markov chain ("ebooks") tweets to Twitter', usage='%(prog)s [options] SCREEN_NAME')
 
-    tweeter.add_argument('-r', '--reply', action='store_const', const='reply', dest='action', help='tweet responses to recent mentions')
-    tweeter.add_argument('--corpus', dest='corpus', metavar='corpus', type=str, help='text file, one sentence per line')
-    tweeter.add_argument('--no-learn', dest='learn', action='store_false', help='skip learning (by default, recent tweets are added to corpus)')
+    tweeter = subparsers.add_parser('tweet', description=TWEETER_DESC,
+                                    parents=[tbu.args.parent()], usage='%(prog)s [options] SCREEN_NAME')
+
+    tweeter.add_argument('-r', '--reply', action='store_const', const='reply',
+                         dest='action', help='tweet responses to recent mentions')
+
+    tweeter.add_argument('--corpus', dest='corpus', metavar='corpus', type=str,
+                         help='text file, one sentence per line')
+
+    tweeter.add_argument('--no-learn', dest='learn', action='store_false',
+                         help='skip learning (by default, recent tweets are added to corpus)')
+
     tweeter.set_defaults(func=tweet_func, action='tweet')
 
-    learner = subparsers.add_parser('corpus',
-                                    description='Turn a twitter archive into a twitter_markov-ready text file',
-                                    usage="%(prog)s [options] archive corpus")
+    learner = subparsers.add_parser('corpus', description=LEARNER_DESC, usage="%(prog)s [options] archive corpus")
 
     learner.add_argument('--no-retweets', action='store_true', help='skip retweets')
     learner.add_argument('--no-replies', action='store_true', help='filter out replies')

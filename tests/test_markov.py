@@ -36,7 +36,7 @@ class tweeter_markov_tests(unittest.TestCase):
         tm = TwitterMarkov('example_screen_name', self.corpus,
                            config=self.configfile, dry_run=True, learn=False)
 
-        assert type(tm) == TwitterMarkov
+        assert isinstance(tm, TwitterMarkov)
 
         assert hasattr(tm, 'screen_name')
         assert hasattr(tm, 'api')
@@ -47,13 +47,13 @@ class tweeter_markov_tests(unittest.TestCase):
     def testTwitterMarkovConfigCorpus(self):
         tm = TwitterMarkov('example_screen_name', config=self.configfile,
                            dry_run=True, learn=False)
-        assert type(tm) == TwitterMarkov
+        assert isinstance(tm, TwitterMarkov)
         del tm
 
     def testTwitterMarkovListCorpus(self):
         tm = TwitterMarkov('example_screen_name', [self.corpus], config=self.configfile,
                            dry_run=True, learn=False)
-        assert type(tm) == TwitterMarkov
+        assert isinstance(tm, TwitterMarkov)
         del tm
 
     def testTwitterMarkovErrors(self):

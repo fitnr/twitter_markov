@@ -21,6 +21,11 @@ from twitter_bot_utils import archive
 
 import tweepy
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
 TWEET = {
     "source": "\u003Ca href=\"http:\/\/twitter.com\/download\/iphone\" rel=\"nofollow\"\u003ETwitter for iPhone\u003C\/a\u003E",
     "entities": {
@@ -126,7 +131,7 @@ class tweeter_markov_tests(unittest.TestCase):
         assert isinstance(next(generator), tweepy.Status)
 
         generator = checking.generator([self.status] * 2, return_status=False)
-        self.assertTrue(isinstance(next(generator), unicode))
+        self.assertTrue(isinstance(next(generator), basestring))
 
         generator = checking.generator(self.archive, return_status=True)
         self.assertTrue(isinstance(next(generator), dict))
