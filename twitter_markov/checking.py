@@ -75,9 +75,8 @@ def reply_checker(tweet):
                 return False
 
         except AttributeError:
-
             try:
-                if "@" == tweet[0]:
+                if tweet[0] == "@":
                     return False
 
             except AttributeError:
