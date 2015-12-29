@@ -34,13 +34,10 @@ class TwitterMarkov(object):
     _recently_tweeted = []
 
     def __init__(self, screen_name, corpus=None, **kwargs):
+        self.api = kwargs.get('api', tbu.API(screen_name=screen_name, **kwargs))
 
         self.screen_name = screen_name
-
-        self.api = kwargs.get('api', tbu.API(screen_name, **kwargs))
-
         self.config = self.api.config
-
         self.logger = self.api.logger
 
         self.logger.debug('%s, %s', screen_name, corpus)

@@ -1,3 +1,8 @@
+0.4.1
+-----
+
+* Small update for changed twitter bot utils API
+
 0.4
 ---
 
