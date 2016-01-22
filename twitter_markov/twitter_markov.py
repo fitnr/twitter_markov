@@ -200,7 +200,7 @@ class TwitterMarkov(object):
                 sent = sent + choice('.!?')
 
             if len(text) + len(sent) < max_len - 1:
-                text = text + ' ' + sent
+                text = (text + ' ' + sent).strip()
 
             else:
                 # Check tweet against blacklist and recent tweets
