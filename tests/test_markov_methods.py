@@ -71,6 +71,8 @@ class tweeter_markov_tests(unittest.TestCase):
         self.tm = TwitterMarkov('example_screen_name', [self.corpus], config=self.configfile,
                                 dry_run=True, learn=False)
 
+        self.tm.log.setLevel(100)
+
     @mock.patch.object(tweepy.API, 'user_timeline', return_value=fake_timeline())
     def testTwitterMarkovCompose(self, *_):
         response = self.tm.compose(tries=150, max_overlap_ratio=2, max_overlap_total=100)
@@ -78,14 +80,10 @@ class tweeter_markov_tests(unittest.TestCase):
         assert isinstance(response, basestring)
         assert len(response) < 140
 
-        tweeted = self.tm.tweet()
-        assert tweeted == None
-
     @mock.patch.object(tweepy.API, 'mentions_timeline', return_value=fake_timeline())
     @mock.patch.object(tweepy.API, 'user_timeline', return_value=fake_timeline())
     def testTwitterMarkovReply(self, *_):
         r = self.tm.reply_all(tries=75, max_overlap_ratio=2, max_overlap_total=100)
-        assert r == None
 
     @mock.patch.object(tweepy.API, 'user_timeline', return_value=fake_timeline())
     def testTwitterMarkovRecentlyTweeted(self, _):
@@ -94,13 +92,13 @@ class tweeter_markov_tests(unittest.TestCase):
 
     @mock.patch.object(tweepy.API, 'user_timeline', return_value=fake_timeline())
     def testTwitterMarkovCheckTweet(self, _):
-        assert self.tm.check_tweet('') == False
-        assert self.tm.check_tweet('badword') == False
-        assert self.tm.check_tweet('Lorem ipsum dolor sit amet') == False
-        assert self.tm.check_tweet('Lorem ipsum dolor sit amet!') == False
-        assert self.tm.check_tweet('Lorem ipsum dolor set namet') == False
-        assert self.tm.check_tweet('Random Text that should work totally') == True
-        assert self.tm.check_tweet('@reply Random Text') == True
+        assert self.tm.check_tweet('') is False
+        assert self.tm.check_tweet('badword') is False
+        assert self.tm.check_tweet('Lorem ipsum dolor sit amet') is False
+        assert self.tm.check_tweet('Lorem ipsum dolor sit amet!') is False
+        assert self.tm.check_tweet('Lorem ipsum dolor set namet') is False
+        assert self.tm.check_tweet('Random Text that should work totally') is True
+        assert self.tm.check_tweet('@reply Random Text') is True
 
     @mock.patch.object(tweepy.API, 'user_timeline', return_value=fake_timeline())
     def testTwitterMarkovLearn(self, _):

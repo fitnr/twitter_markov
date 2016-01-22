@@ -35,6 +35,7 @@ class tweeter_markov_tests(unittest.TestCase):
     def testTwitterMarkovAttribs(self):
         tm = TwitterMarkov('example_screen_name', self.corpus,
                            config=self.configfile, dry_run=True, learn=False)
+        tm.log.setLevel(100)
 
         assert isinstance(tm, TwitterMarkov)
 
@@ -47,7 +48,7 @@ class tweeter_markov_tests(unittest.TestCase):
     def testTwitterMarkovConfigCorpus(self):
         tm = TwitterMarkov('example_screen_name', config=self.configfile,
                            dry_run=True, learn=False)
-        assert isinstance(tm, TwitterMarkov)
+        tm.log.setLevel(100)
         del tm
 
     def testTwitterMarkovListCorpus(self):
@@ -62,7 +63,6 @@ class tweeter_markov_tests(unittest.TestCase):
     def testTwitterMarkovModel(self, *_):
         tm = TwitterMarkov('example_screen_name', self.corpus,
                            config=self.configfile, dry_run=True, learn=False)
-
         assert isinstance(tm.models['tweets.txt'], markovify.text.Text)
 
 if __name__ == '__main__':

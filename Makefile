@@ -32,6 +32,6 @@ README.rst: README.md
 clean:; rm -rf dist build
 
 cov:
-	coverage run --include="twitter_markov/*" setup.py test
+	- coverage run --include="twitter_markov/*" setup.py test
+	coverage report
 	coverage html
-	open htmlcov/index.html
