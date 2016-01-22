@@ -35,6 +35,12 @@ class TwitterMarkov(object):
     _recently_tweeted = []
 
     def __init__(self, screen_name, corpus=None, **kwargs):
+        '''
+        :screen_name User name to post as
+        :corpus Text file to read to generate text.
+        :api tweepy.API object
+        :dry_run boolean If set, TwitterMarkov won't actually post tweets.
+        '''
         if 'api' in kwargs:
             self.api = kwargs.pop('api')
         else:
