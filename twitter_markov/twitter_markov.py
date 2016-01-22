@@ -156,8 +156,9 @@ class TwitterMarkov(object):
         self.log.info('%replying to all...')
         self.log.debug('%s mentions found', len(mentions))
 
-        for status in mentions:
-            self.reply(status, model, **kwargs)
+        if not self.dry_run:
+            for status in mentions:
+                self.reply(status, model, **kwargs)
 
     def reply(self, status, model=None, **kwargs):
         self.log.debug('Replying to a mention')
