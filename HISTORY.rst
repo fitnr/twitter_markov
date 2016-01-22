@@ -1,3 +1,8 @@
+0.4.2
+-----
+
+* Fix a double-logging bug
+
 0.4.1
 -----
 
