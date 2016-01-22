@@ -12,10 +12,10 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 from __future__ import unicode_literals, print_function
 import os
 import re
+import logging
 from random import choice
 from collections import Iterable
 import Levenshtein
@@ -26,6 +26,7 @@ from . import checking
 
 LEVENSHTEIN_LIMIT = 0.70
 
+
 class TwitterMarkov(object):
 
     """Posts markov-generated text to twitter"""
@@ -34,13 +35,20 @@ class TwitterMarkov(object):
     _recently_tweeted = []
 
     def __init__(self, screen_name, corpus=None, **kwargs):
-        self.api = kwargs.get('api', tbu.API(screen_name=screen_name, **kwargs))
+        if 'api' in kwargs:
+            self.api = kwargs.pop('api')
+        else:
+            self.api = tbu.API(screen_name=screen_name, **kwargs)
+
+        try:
+            self.log = self.api.logger
+        except AttributeError:
+            self.log = logging.getLogger(screen_name)
 
         self.screen_name = screen_name
         self.config = self.api.config
-        self.logger = self.api.logger
 
-        self.logger.debug('%s, %s', screen_name, corpus)
+        self.dry_run = kwargs.pop('dry_run', False)
 
         try:
             corpus = corpus or self.config.get('corpus')
@@ -55,19 +63,18 @@ class TwitterMarkov(object):
                 raise RuntimeError('Unable to find any corpora!')
 
             self.corpora = [b for b in corpora if b is not None]
-            self.logger.debug('corpora: %s', self.corpora)
+
+            self.log.debug('%s, %s', screen_name, self.corpora)
 
             state_size = kwargs.get('state_size', self.config.get('state_size'))
 
             self.models = self._setup_models(self.corpora, state_size)
 
         except RuntimeError as e:
-            self.logger.error(e)
+            self.log.error(e)
             raise e
 
-        self.logger.debug('models: %s', list(self.models.keys()))
-
-        self.dry_run = kwargs.get('dry_run', False)
+        self.log.debug('models: %s', list(self.models.keys()))
 
         blacklist = kwargs.get('blacklist') or self.config.get('blacklist', [])
         self.wordfilter = Wordfilter()
@@ -81,7 +88,7 @@ class TwitterMarkov(object):
         Given a list of paths to corpus text files, set up markovify models for each.
         These models are returned in a dict, (with the basename as key).
         """
-        self.logger.debug('setting up models')
+        self.log.debug('setting up models')
         out = dict()
 
         state_size = state_size or 3
@@ -95,13 +102,13 @@ class TwitterMarkov(object):
                     out[name] = markovify.text.NewlineText(m.read(), state_size=state_size)
 
         except AttributeError as e:
-            self.logger.error(e)
-            self.logger.error("Probably couldn't find the model file.")
+            self.log.error(e)
+            self.log.error("Probably couldn't find the model file.")
             raise e
 
         except IOError as e:
-            self.logger.error(e)
-            self.logger.error('Error reading %s', corpus_path)
+            self.log.error(e)
+            self.log.error('Error reading %s', corpus_path)
             raise e
 
         self.default_model = os.path.basename(corpora[0])
@@ -120,52 +127,50 @@ class TwitterMarkov(object):
         text = text.strip().lower()
 
         if len(text) == 0:
-            self.logger.info("Rejected (empty)")
+            self.log.info("Rejected (empty)")
             return False
 
         if self.wordfilter.blacklisted(text):
-            self.logger.info("Rejected (blacklisted)")
+            self.log.info("Rejected (blacklisted)")
             return False
 
         for line in self.recently_tweeted:
             if text in line.strip().lower():
-                self.logger.info("Rejected (Identical)")
+                self.log.info("Rejected (Identical)")
                 return False
 
             if Levenshtein.ratio(re.sub(r'\W+', '', text), re.sub(r'\W+', '', line.lower())) >= LEVENSHTEIN_LIMIT:
-                self.logger.info("Rejected (Levenshtein.ratio)")
+                self.log.info("Rejected (Levenshtein.ratio)")
                 return False
 
         return True
 
     def reply_all(self, model=None, **kwargs):
         mentions = self.api.mentions_timeline(since_id=self.api.last_reply)
-        self.logger.info('%replying to all...')
-        self.logger.debug('%s mentions found', len(mentions))
+        self.log.info('%replying to all...')
+        self.log.debug('%s mentions found', len(mentions))
 
         for status in mentions:
             self.reply(status, model, **kwargs)
 
     def reply(self, status, model=None, **kwargs):
-        self.logger.debug('Replying to a mention')
+        self.log.debug('Replying to a mention')
 
         if status.user.screen_name == self.screen_name:
-            self.logger.debug('Not replying to self')
+            self.log.debug('Not replying to self')
             return
 
         text = self.compose(model, max_len=138 - len(status.user.screen_name), **kwargs)
 
         reply = '@' + status.user.screen_name + ' ' + text
 
-        self.logger.info(reply)
+        self.log.info(reply)
         self._update(reply, in_reply=status.id_str)
 
     def tweet(self, model=None, **kwargs):
-        self.logger.info('Composing a tweet...')
-
         text = self.compose(model, **kwargs)
 
-        self.logger.info(text)
+        self.log.info(text)
         self._update(text)
 
     def _update(self, tweet, in_reply=None):
@@ -174,7 +179,6 @@ class TwitterMarkov(object):
 
     def compose(self, model=None, max_len=140, **kwargs):
         '''Format a tweet with a reply.'''
-
         max_len = min(140, max_len)
         model = self.models[model or self.default_model]
 
@@ -207,6 +211,8 @@ class TwitterMarkov(object):
                     # didn't check out, start over
                     text = ''
 
+        self.log.debug('TwitterMarkov: %s', text)
+
         return text
 
     def learn_parent(self, corpus=None, parent=None):
@@ -215,7 +221,7 @@ class TwitterMarkov(object):
         corpus = corpus or self.corpora[0]
 
         if not parent or not self.api.last_tweet:
-            self.logger.debug('Cannot teach: missing parent or tweets')
+            self.log.debug('Cannot teach: missing parent or tweets')
             return
 
         tweets = self.api.user_timeline(parent, since_id=self.api.last_tweet)
@@ -232,12 +238,11 @@ class TwitterMarkov(object):
                                      no_replies=self.config.get('no_replies')
                                     )
 
-            self.logger.debug('%s is learning', corpus)
+            self.log.debug('%s is learning', corpus)
 
             with open(corpus, 'a') as f:
                 f.writelines(tweet + '\n' for tweet in gen)
 
         except IOError as e:
-            self.logger.error('Learning failed for %s', corpus)
-            self.logger.error(e)
-
+            self.log.error('Learning failed for %s', corpus)
+            self.log.error(e)
