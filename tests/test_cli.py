@@ -15,28 +15,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import unicode_literals
 import unittest
-from twitter_markov import cli
-from twitter_bot_utils import archive
 import sys
 from os import path, remove
 import subprocess
+from twitter_markov import cli
+from twitter_bot_utils import archive
 
 
 class TestMarkovCLI(unittest.TestCase):
 
+    csvpath = path.join(path.dirname(__file__), 'data/tweets.csv')
+
     def setUp(self):
-        self.archivepath = path.join(path.dirname(__file__), 'data', 'tweets.csv')
-        
-        self.argv = ['twittermarkov', 'corpus', self.archivepath]
+        self.argv = ['twittermarkov', 'corpus', self.csvpath]
 
     def testcli(self):
-        target = path.join(path.dirname(self.archivepath), 'tmp.txt')
+        target = path.join(path.dirname(self.csvpath), 'tmp.txt')
 
         sys.argv = self.argv + ['-o', target]
 
         cli.main()
 
-        result = list(t['text'] for t in archive.read_csv(self.archivepath))
+        result = list(t['text'] for t in archive.read_csv(self.csvpath))
 
         try:
             with open(target) as f:
@@ -48,6 +48,22 @@ class TestMarkovCLI(unittest.TestCase):
 
     def testcliStdout(self):
         p = subprocess.Popen(self.argv, stdout=subprocess.PIPE)
+        out, err = p.communicate()
+
+        self.assertIsNone(err, 'err is None')
+        self.assertIsNotNone(out, 'out is not None')
+
+        sample = 'He could speak a little Spanish, and also a language which nobody understood'
+
+        try:
+            self.assertIn(sample, out)
+
+        except (TypeError, AssertionError):
+            self.assertIn(sample, out.decode())
+
+    def testcliStdoutText(self):
+        argv = self.argv[:-1] + [path.join(path.dirname(__file__), 'data/tweets.txt'), '--one-per-line']
+        p = subprocess.Popen(argv, stdout=subprocess.PIPE)
         out, err = p.communicate()
 
         self.assertIsNone(err, 'err is None')
