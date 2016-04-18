@@ -50,11 +50,10 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+docs.zip
 
-# PyBuilder
-target/
 
 *.brain
 *.brain-journal
 
-readme.rst
+README.rst

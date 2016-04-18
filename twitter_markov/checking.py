@@ -21,16 +21,18 @@ def generator(tweets, return_status=None, **kwargs):
     '''
     Returns a generator that returned a filtered input iterable of tweets or
     tweet-like objects (tweepy.Status objects or dictionaries).
-    :tweets iterable
-    :return_status boolean If true, returns entire status with modified test
-    :no_retweets boolean Exclude retweets (e.g. strings beginning RT) (default False)
-    :no_replies boolean Exclude replies (e.g. strings beginning @screen_name) (default False)
-    :no_mentions boolean Filter out mentions (e.g. strings containing @screen_name) (default False)
-    :no_badwords boolean Exclude derogatory terms for people (default True)
-    :no_urls boolean filter out exclude urls (default False)
-    :no_hashtags boolean filter out hashtags (default False)
-    :no_media boolean filter out media (twitter objects only) (default False)
-    :no_symbols boolean filter out symbols (twitter objects only) (default False)
+
+    Args:
+        tweets (iterable):
+        return_status (boolean): If true, returns entire status with modified test
+        no_retweets (boolean): Exclude retweets (e.g. strings beginning RT) (default False)
+        no_replies (boolean): Exclude replies (e.g. strings beginning @screen_name) (default False)
+        no_mentions (boolean): Filter out mentions (e.g. strings containing @screen_name) (default False)
+        no_badwords (boolean): Exclude derogatory terms for people (default True)
+        no_urls (boolean): filter out exclude urls (default False)
+        no_hashtags (boolean): filter out hashtags (default False)
+        no_media (boolean): filter out media (twitter objects only) (default False)
+        no_symbols (boolean): filter out symbols (twitter objects only) (default False)
     '''
 
     tweet_checker = construct_tweet_checker(

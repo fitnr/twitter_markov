@@ -13,7 +13,14 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-.PHONY: deploy cov
+.PHONY: all deploy cov
+
+all: docs.zip README.rst
+
+docs.zip: docs/source/conf.py $(wildcard docs/*.rst docs/*/*.rst twitter_markov/*.py) 
+	$(MAKE) -C docs html
+	cd docs/_build/html; \
+	zip -qr ../../../$@ . -x '*/.DS_Store' .DS_Store
 
 deploy: README.rst | clean
 	python setup.py register
