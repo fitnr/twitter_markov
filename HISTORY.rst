@@ -1,3 +1,8 @@
+0.4.3
+-----
+
+* Add option to create a corpus from a file with one text per line
+
 0.4.2
 -----
 

@@ -22,10 +22,13 @@ try:
 except IOError:
     readme = ''
 
+with open('twitter_markov/__init__.py') as i:
+    version = next(r for r in i.readlines() if '__version__' in r).split('=')[1].strip('"\' \n')
+
 setup(
     name='twitter_markov',
 
-    version="0.4.2",
+    version=version,
 
     description='Create markov chain ("_ebooks") accounts on Twitter',
 
