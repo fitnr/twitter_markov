@@ -169,11 +169,10 @@ def construct_tweet_filter(no_mentions=False, no_urls=False, no_media=False, no_
 
     def filterer(tweet):
         # ignore strings
-        if isinstance(tweet, str):
-            text = tweet
-
-        else:
+        try:
             text = helpers.remove_entities(tweet, entitytypes)
+        except AttributeError:
+            text = tweet
 
         # Older tweets don't have entities
         if no_urls:
