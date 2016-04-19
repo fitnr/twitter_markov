@@ -1,7 +1,11 @@
-Archive to Corpus
-==================
+Create a corpus
+===============
 
 The ``twittermarkov corpus`` command will create such a file from a Twitter archive, with options to ignore replies or retweets, and to filter out mentions, urls, media, and/or hashtags.
+
+"Corpus" is just a fancy-schmancy word for "a bunch of text". `twittermarkov` expects a corpus that's a text file with one tweet per line. Several thousand lines are needed to get decent results, with fewer than 100 or so it won't work at all
+
+You can turn anything as a corpus. If you're looking for free material, try `Project Gutenberg <http://www.gutenberg.org>`__ and the `Internet Archive <https://archive.org/details/texts>`__.
 
 When reading an archive, these arguments use the tweet's metadata to precisely strip the offending content. This may not work well for tweets posted before 2011 or so. For text files or older tweets, a regular expression search is used.
 
