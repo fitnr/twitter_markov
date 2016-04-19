@@ -13,7 +13,7 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-.PHONY: all deploy cov
+.PHONY: all deploy cov test
 
 all: docs.zip README.rst
 
@@ -36,9 +36,13 @@ README.rst: README.md
 	@touch $@
 	python setup.py check --restructuredtext --strict
 
-clean:; rm -rf dist build
+
+test: cov
+	coverage html
 
 cov:
-	- coverage run --include="twitter_markov/*" setup.py test
+	- coverage run --include="build/lib/twitter_markov/*,twitter_markov/*" setup.py test
 	coverage report
-	coverage html
+
+clean:; rm -rf dist build
+
