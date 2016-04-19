@@ -12,9 +12,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
-import shlex
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -77,6 +75,8 @@ language = None
 #today = ''
 # Else, today_fmt is used as the format for a strftime call.
 #today_fmt = '%B %d, %Y'
+
+intersphinx_mapping = {'tweepy': ('http://docs.tweepy.org/en/v3.5.0', None)}
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

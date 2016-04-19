@@ -29,18 +29,21 @@ LEVENSHTEIN_LIMIT = 0.70
 
 class TwitterMarkov(object):
 
-    """Posts markov-generated text to twitter"""
+    """
+    Posts markov-generated text to twitter
+
+    Args:
+        screen_name (str): Twitter user account
+        corpus (str): Text file to read to generate text.
+        api (:ref:`tweepy.API <tweepy:tweepy.api>`): API to use to post tweets.
+        dry_run (boolean): If set, TwitterMarkov won't actually post tweets.
+        blacklist (Sequence): A list of words to avoid generating.
+    """
 
     default_model = None
     _recently_tweeted = []
 
     def __init__(self, screen_name, corpus=None, **kwargs):
-        '''
-        :screen_name User name to post as
-        :corpus Text file to read to generate text.
-        :api tweepy.API object
-        :dry_run boolean If set, TwitterMarkov won't actually post tweets.
-        '''
         if 'api' in kwargs:
             self.api = kwargs.pop('api')
         else:
@@ -123,6 +126,7 @@ class TwitterMarkov(object):
 
     @property
     def recently_tweeted(self):
+        '''Returns recent tweets from ``self.screen_name``.'''
         if len(self._recently_tweeted) == 0:
             recent_tweets = self.api.user_timeline(self.screen_name, count=self.config.get('checkback', 20))
             self._recently_tweeted = [x.text for x in recent_tweets]
@@ -130,6 +134,7 @@ class TwitterMarkov(object):
         return self._recently_tweeted
 
     def check_tweet(self, text):
+        '''Check if a string contains blacklisted words or is similar to a recent tweet.'''
         text = text.strip().lower()
 
         if len(text) == 0:
@@ -152,6 +157,7 @@ class TwitterMarkov(object):
         return True
 
     def reply_all(self, model=None, **kwargs):
+        '''Reply to all mentions since the last time ``self.screen_name`` sent a reply tweet.'''
         mentions = self.api.mentions_timeline(since_id=self.api.last_reply)
         self.log.info('%replying to all...')
         self.log.debug('%s mentions found', len(mentions))
@@ -161,6 +167,7 @@ class TwitterMarkov(object):
                 self.reply(status, model, **kwargs)
 
     def reply(self, status, model=None, **kwargs):
+        '''Compose a reply to the given ``tweepy.Status``.'''
         self.log.debug('Replying to a mention')
 
         if status.user.screen_name == self.screen_name:
@@ -175,6 +182,7 @@ class TwitterMarkov(object):
         self._update(reply, in_reply=status.id_str)
 
     def tweet(self, model=None, **kwargs):
+        '''Post a tweet composed by "model" (or the default model).'''
         text = self.compose(model, **kwargs)
 
         self.log.info(text)
@@ -185,7 +193,7 @@ class TwitterMarkov(object):
             self.api.update_status(status=tweet, in_reply_to_status_id=in_reply)
 
     def compose(self, model=None, max_len=140, **kwargs):
-        '''Format a tweet with a reply.'''
+        '''Returns a string generated from "model" (or the default model).'''
         max_len = min(140, max_len)
         model = self.models[model or self.default_model]
 
@@ -223,7 +231,10 @@ class TwitterMarkov(object):
         return text
 
     def learn_parent(self, corpus=None, parent=None):
-        '''Add recent tweets from @parent to corpus'''
+        '''
+        Add recent tweets from the parent account (since the last time ``self.screen_name`` tweeted)
+        to the corpus. This is subject to the filters described in ``bots.yaml``.
+        '''
         parent = parent or self.config.get('parent')
         corpus = corpus or self.corpora[0]
 
