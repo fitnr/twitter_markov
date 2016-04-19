@@ -1,5 +1,5 @@
 # twitter_markov - Create markov chain ("_ebooks") accounts on Twitter
-# Copyright 2014-2015 Neil Freeman contact@fakeisthenewreal.org
+# Copyright 2014-2016 Neil Freeman contact@fakeisthenewreal.org
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
