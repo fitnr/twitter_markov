@@ -1,3 +1,9 @@
+0.4.4
+-----
+
+* Remove one per line option
+* Expand docs
+
 0.4.3
 -----
 

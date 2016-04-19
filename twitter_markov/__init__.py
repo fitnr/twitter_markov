@@ -17,4 +17,4 @@
 from .twitter_markov import TwitterMarkov
 from . import checking
 
-__version__ = "0.4.3"
+__version__ = "0.4.4"
