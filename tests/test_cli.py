@@ -61,22 +61,6 @@ class TestMarkovCLI(unittest.TestCase):
         except (TypeError, AssertionError):
             self.assertIn(sample, out.decode())
 
-    def testcliStdoutText(self):
-        argv = self.argv[:-1] + [path.join(path.dirname(__file__), 'data/tweets.txt'), '--one-per-line']
-        p = subprocess.Popen(argv, stdout=subprocess.PIPE)
-        out, err = p.communicate()
-
-        self.assertIsNone(err, 'err is None')
-        self.assertIsNotNone(out, 'out is not None')
-
-        sample = 'He could speak a little Spanish, and also a language which nobody understood'
-
-        try:
-            self.assertIn(sample, out)
-
-        except (TypeError, AssertionError):
-            self.assertIn(sample, out.decode())
-
 
 if __name__ == '__main__':
     unittest.main()

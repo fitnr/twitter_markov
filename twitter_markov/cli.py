@@ -56,7 +56,6 @@ def main():
     learner.add_argument('--no-urls', action='store_true', help='filter out urls')
     learner.add_argument('--no-media', action='store_true', help='filter out media')
     learner.add_argument('--no-hashtags', action='store_true', help='filter out hashtags')
-    learner.add_argument('--one-per-line', action='store_true', help='Input file has one "tweet" per line, no header')
     learner.add_argument('-q', '--quiet', action='store_true', help='run quietly')
     learner.add_argument('archive', type=str, metavar='archive',
                          default=os.getcwd(), help='archive csv file (e.g. tweets.csv found in Twitter archive)')
@@ -84,14 +83,9 @@ def learn_func(args):
     if not args['quiet']:
         print("Reading " + args['archive'], file=sys.stderr)
 
-    if args['one_per_line']:
-        read = tbu.archive.read_text
-    else:
-        read = tbu.archive.read_csv
-
-    archive = read(args.get('archive'))
+    archive = tbu.archive.read_csv(args.get('archive'))
     gen = checking.generator(archive, **args)
-    tweets = ((tweet.replace('\n', ' ') + '\n') for tweet in gen)
+    tweets = (tweet.replace(u'\n', u' ') + '\n' for tweet in gen)
 
     if args['output'] in ('-', '/dev/stdout'):
         signal(SIGPIPE, SIG_DFL)
