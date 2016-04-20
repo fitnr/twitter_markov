@@ -66,63 +66,55 @@ def generator(tweets, return_status=None, **kwargs):
         yield text
 
 
-def reply_checker(tweet):
+def isreply(tweet):
     try:
-        if tweet.in_reply_to_user_id:
-            return False
+        return bool(tweet.in_reply_to_user_id)
 
     except AttributeError:
         try:
-            if tweet.get('in_reply_to_user_id') or tweet.get('in_reply_to_status_id'):
-                return False
+            return bool(tweet.get('in_reply_to_user_id') or tweet.get('in_reply_to_status_id'))
 
         except AttributeError:
             try:
-                if tweet[0] == "@":
-                    return False
+                return tweet[0] == "@"
 
             except AttributeError:
                 pass
 
-    return True
+    return False
 
 
-def rt_checker(tweet):
+def isretweet(tweet):
+
     try:
-        if tweet.retweeted:
-            return False
+        return bool(tweet.retweeted)
 
     except AttributeError:
         try:
-            if tweet.get('retweeted_status') or tweet.get('retweeted_status_id'):
-                return False
+            return bool(tweet.get('retweeted_status') or tweet.get('retweeted_status_id'))
 
         except AttributeError:
-
             try:
-                if "RT" in tweet[:2]:
-                    return False
+                return tweet[:3].upper() == 'RT '
 
             except AttributeError:
                 pass
 
-    return True
+    return False
 
 
-def wf_checker(tweet):
+def isblacklisted(tweet):
     try:
-        if wordfilter.blacklisted(tweet.text):
-            return False
+        return wordfilter.blacklisted(tweet.text)
 
     except AttributeError:
         try:
-            if wordfilter.blacklisted(tweet['text']):
-                return False
+            return wordfilter.blacklisted(tweet['text'])
 
         except (KeyError, TypeError):
-            pass
+            return wordfilter.blacklisted(tweet)
 
-    return True
+    return False
 
 
 def construct_tweet_checker(no_retweets=False, no_replies=False, no_badwords=True):
@@ -130,19 +122,16 @@ def construct_tweet_checker(no_retweets=False, no_replies=False, no_badwords=Tru
     checks = []
 
     if no_retweets:
-        checks.append(rt_checker)
+        checks.append(isretweet)
 
     if no_replies:
-        checks.append(reply_checker)
+        checks.append(isreply)
 
     if no_badwords:
-        checks.append(wf_checker)
+        checks.append(isblacklisted)
 
     def checker(tweet):
-        for check in checks:
-            if not check(tweet):
-                return False
-        return True
+        return not any(isbad(tweet) for isbad in checks)
 
     return checker
 
