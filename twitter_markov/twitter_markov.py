@@ -159,8 +159,8 @@ class TwitterMarkov(object):
     def reply_all(self, model=None, **kwargs):
         '''Reply to all mentions since the last time ``self.screen_name`` sent a reply tweet.'''
         mentions = self.api.mentions_timeline(since_id=self.api.last_reply)
-        self.log.info('%replying to all...')
-        self.log.debug('%s mentions found', len(mentions))
+        self.log.info('replying to all...')
+        self.log.debug('mentions found: %d', len(mentions))
 
         if not self.dry_run:
             for status in mentions:
@@ -172,6 +172,10 @@ class TwitterMarkov(object):
 
         if status.user.screen_name == self.screen_name:
             self.log.debug('Not replying to self')
+            return
+
+        if self.wordfilter.blacklisted(status.text):
+            self.log.debug('Not replying to tweet with a blacklisted word (%d)', status.id)
             return
 
         text = self.compose(model, max_len=138 - len(status.user.screen_name), **kwargs)
