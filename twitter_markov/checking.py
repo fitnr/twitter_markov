@@ -36,17 +36,17 @@ def generator(tweets, return_status=None, **kwargs):
     '''
 
     tweet_checker = construct_tweet_checker(
-        no_retweets=kwargs.get('no_retweets', False),
-        no_replies=kwargs.get('no_replies', False),
+        no_retweets=kwargs.get('no_retweets'),
+        no_replies=kwargs.get('no_replies'),
         no_badwords=kwargs.get('no_replies', True)
     )
 
     tweet_filter = construct_tweet_filter(
-        no_mentions=kwargs.get('no_mentions', False),
-        no_urls=kwargs.get('no_urls', False),
-        no_media=kwargs.get('no_media', False),
-        no_hashtags=kwargs.get('no_hashtags', False),
-        no_symbols=kwargs.get('no_symbols', False)
+        no_mentions=kwargs.get('no_mentions'),
+        no_urls=kwargs.get('no_urls'),
+        no_media=kwargs.get('no_media'),
+        no_hashtags=kwargs.get('no_hashtags'),
+        no_symbols=kwargs.get('no_symbols')
     )
 
     for status in tweets:
@@ -67,6 +67,18 @@ def generator(tweets, return_status=None, **kwargs):
 
 
 def isreply(tweet):
+    '''
+    Checks if a given tweet is a reply.
+    If tweet is a string, returns True when text starts with '@'.
+    If tweet is a tweepy.Status object, returns True when ``in_reply_to_status_id`` or
+    ``in_reply_to_user_id`` is set.
+
+    Args:
+        tweet (str/tweepy.Status/dict): A string, tweepy.Status object, or Status-like dict.
+
+    Returns:
+        bool
+    '''
     try:
         return bool(tweet.in_reply_to_user_id)
 
@@ -85,7 +97,18 @@ def isreply(tweet):
 
 
 def isretweet(tweet):
+    '''
+    Checks if a given tweet is a retweet.
+    If tweet is a string, returns True when text starts with 'RT '.
+    If tweet is a tweepy.Status object, returns True when ``retweeted_status`` or
+    ``retweeted_status_id`` is set.
 
+    Args:
+        tweet (str/tweepy.Status/dict): A string, tweepy.Status object, or Status-like dict.
+
+    Returns:
+        bool
+    '''
     try:
         return bool(tweet.retweeted)
 
@@ -104,6 +127,15 @@ def isretweet(tweet):
 
 
 def isblacklisted(tweet):
+    '''
+    Checks if a given tweet contains a word blacklisted by WordFilter.
+
+    Args:
+        tweet (str/tweepy.Status/dict): A string, tweepy.Status object, or Status-like dict.
+
+    Returns:
+        bool
+    '''
     try:
         return wordfilter.blacklisted(tweet.text)
 
@@ -118,7 +150,17 @@ def isblacklisted(tweet):
 
 
 def construct_tweet_checker(no_retweets=False, no_replies=False, no_badwords=True):
-    '''Returns a tweet checker'''
+    '''
+    Returns a tweet checker, a function that checks if tweets pass the tests.
+
+    Args:
+        no_retweets (boolean): Checker filters out retweets (default: False).
+        no_replies  (boolean): Checker filters out replies (default: False).
+        no_badwords  (boolean): Checker filters out blacklisted words (default: True).
+
+    Returns:
+        function
+    '''
     checks = []
 
     if no_retweets:
@@ -137,8 +179,19 @@ def construct_tweet_checker(no_retweets=False, no_replies=False, no_badwords=Tru
 
 
 def construct_tweet_filter(no_mentions=False, no_urls=False, no_media=False, no_hashtags=False, no_symbols=False):
-    '''returns a filter for tweet text'''
+    '''
+    Returns a filter function for tweet text.
 
+    Args:
+        no_mentions (boolean): filter out mentions.
+        no_urls (boolean): filter out urls.
+        no_media (boolean): filter out media.
+        no_hashtags (boolean): filter out hashtags.
+        no_symbols (boolean): filter out symbols.
+
+    Returns:
+        function
+    '''
     entitytypes = []
 
     if no_mentions:
