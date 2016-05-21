@@ -168,8 +168,15 @@ class TwitterMarkov(object):
             for status in mentions:
                 self.reply(status, model, **kwargs)
 
-    def reply(self, status, model=None, **kwargs):
-        '''Compose a reply to the given ``tweepy.Status``.'''
+    def reply(self, status, model=None, max_len=140, **kwargs):
+        '''
+        Compose a reply to the given ``tweepy.Status``.
+
+        Args:
+            status (tweepy.Status): status to reply to.
+            model (str): name of model.
+            max_len (int): maximum length of tweet (default: 140)
+        '''
         self.log.debug('Replying to a mention')
 
         if status.user.screen_name == self.screen_name:
@@ -180,9 +187,8 @@ class TwitterMarkov(object):
             self.log.debug('Not replying to tweet with a blacklisted word (%d)', status.id)
             return
 
-        text = self.compose(model, max_len=138 - len(status.user.screen_name), **kwargs)
-
-        reply = '@' + status.user.screen_name + ' ' + text
+        text = self.compose(model, max_len=max_len - 2 - len(status.user.screen_name), **kwargs)
+        reply = '@{} {}'.format(status.user.screen_name, text)
 
         self.log.info(reply)
         self._update(reply, in_reply=status.id_str)
@@ -200,16 +206,17 @@ class TwitterMarkov(object):
             max_overlap_ratio (float): Used for testing output (default: 0.7).
             max_overlap_total (int): Used for testing output (default: 15)
         '''
+        model = self.models[model or self.default_model]
         text = self.compose(model, **kwargs)
-
-        self.log.info(text)
-        self._update(text)
+        if text:
+            self.log.info(text)
+            self._update(text)
 
     def _update(self, tweet, in_reply=None):
         if not self.dry_run:
             self.api.update_status(status=tweet, in_reply_to_status_id=in_reply)
 
-    def compose(self, model, max_len=140, **kwargs):
+    def compose(self, model=None, max_len=140, **kwargs):
         '''
         Returns a string generated from "model" (or the default model).
         Most of these arguments are passed on to Markovify.
@@ -225,37 +232,24 @@ class TwitterMarkov(object):
         Returns:
             str
         '''
+        model = model or self.models[self.default_model]
         max_len = min(140, max_len)
-        model = self.models[model or self.default_model]
+        self.log.debug('making sentence, max_len=%s, %s', max_len, kwargs)
+        text = model.make_short_sentence(max_len, **kwargs)
 
-        eols = '.?!/:;,'
-        text = ''
+        if text is None:
+            self.log.error('model failed to generate a sentence')
+            return
 
-        while True:
-            sent = model.make_sentence(**kwargs)
+        # convert to unicode in Python 2
+        if hasattr(text, 'decode'):
+            text = text.decode('utf8')
 
-            if not sent:
-                continue
-
-            # convert to unicode in Python 2
-            if hasattr(sent, 'decode'):
-                sent = sent.decode('utf8')
-
-            # Add eol delimiter if one is missing
-            if sent[-1] not in eols and (sent[-2] not in eols and sent[-1] not in u'"\'’”〞❞'):
-                sent = sent + choice('.!?')
-
-            if len(text) + len(sent) < max_len - 1:
-                text = (text + ' ' + sent).strip()
-
-            else:
-                # Check tweet against blacklist and recent tweets
-                if self.check_tweet(text):
-                    # checked out: break and return
-                    break
-                else:
-                    # didn't check out, start over
-                    text = ''
+        else:
+            # Check tweet against blacklist and recent tweets
+            if not self.check_tweet(text):
+                # checked out: break and return
+                text = self.compose(model=model, max_len=max_len, **kwargs)
 
         self.log.debug('TwitterMarkov: %s', text)
 
