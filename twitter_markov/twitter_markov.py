@@ -28,7 +28,6 @@ LEVENSHTEIN_LIMIT = 0.70
 
 
 class TwitterMarkov(object):
-
     """
     Posts markov-generated text to twitter
 
@@ -56,8 +55,10 @@ class TwitterMarkov(object):
 
         self.screen_name = screen_name
         self.config = self.api.config
-
         self.dry_run = kwargs.pop('dry_run', False)
+
+        self.log.debug('screen name: %s', screen_name)
+        self.log.debug("dry run: %s", self.dry_run)
 
         try:
             corpus = corpus or self.config.get('corpus')
@@ -73,8 +74,6 @@ class TwitterMarkov(object):
 
             self.corpora = [b for b in corpora if b is not None]
 
-            self.log.debug('%s, %s', screen_name, self.corpora)
-
             state_size = kwargs.get('state_size', self.config.get('state_size'))
 
             self.models = self._setup_models(self.corpora, state_size)
@@ -89,7 +88,10 @@ class TwitterMarkov(object):
         self.wordfilter = Wordfilter()
         self.wordfilter.add_words(blacklist)
 
+        self.log.debug('blacklist: %s terms', len(self.wordfilter.blacklist))
+
         if kwargs.get('learn', True):
+            self.log.debug('learning...')
             self.learn_parent()
 
     def _setup_models(self, corpora, state_size):
@@ -97,7 +99,7 @@ class TwitterMarkov(object):
         Given a list of paths to corpus text files, set up markovify models for each.
         These models are returned in a dict, (with the basename as key).
         """
-        self.log.debug('setting up models')
+        self.log.debug('setting up models (state_size=%s)', state_size)
         out = dict()
 
         state_size = state_size or 2
@@ -186,7 +188,18 @@ class TwitterMarkov(object):
         self._update(reply, in_reply=status.id_str)
 
     def tweet(self, model=None, **kwargs):
-        '''Post a tweet composed by "model" (or the default model).'''
+        '''
+        Post a tweet composed by "model" (or the default model).
+        Most of these arguments are passed on to Markovify.
+
+        Args:
+            model (str): one of self.models
+            max_len (int): maximum length of the output (default: 140).
+            init_state (tuple): tuple of words to seed the model
+            tries (int): (default: 10)
+            max_overlap_ratio (float): Used for testing output (default: 0.7).
+            max_overlap_total (int): Used for testing output (default: 15)
+        '''
         text = self.compose(model, **kwargs)
 
         self.log.info(text)
@@ -196,8 +209,22 @@ class TwitterMarkov(object):
         if not self.dry_run:
             self.api.update_status(status=tweet, in_reply_to_status_id=in_reply)
 
-    def compose(self, model=None, max_len=140, **kwargs):
-        '''Returns a string generated from "model" (or the default model).'''
+    def compose(self, model, max_len=140, **kwargs):
+        '''
+        Returns a string generated from "model" (or the default model).
+        Most of these arguments are passed on to Markovify.
+
+        Args:
+            model (str): one of self.models
+            max_len (int): maximum length of the output (max: 140, default: 140).
+            init_state (tuple): tuple of words to seed the model
+            tries (int): (default: 10)
+            max_overlap_ratio (float): Used for testing output (default: 0.7).
+            max_overlap_total (int): Used for testing output (default: 15)
+
+        Returns:
+            str
+        '''
         max_len = min(140, max_len)
         model = self.models[model or self.default_model]
 
