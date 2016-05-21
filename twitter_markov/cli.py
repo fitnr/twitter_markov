@@ -33,19 +33,21 @@ def main():
     parser = argparse.ArgumentParser(
         'twittermarkov', description='Tweet with a markov bot, or teach it from a twitter archive.')
 
-    parser.add_argument('-V', '--version', action='version', version="%(prog)s " + version)
+    tbu.args.add_default_args(parser, version, ())
 
     subparsers = parser.add_subparsers()
 
-    tweeter = subparsers.add_parser('tweet', description=TWEETER_DESC,
-                                    parents=[tbu.args.parent()], usage='%(prog)s [options] SCREEN_NAME')
+    tweeter = subparsers.add_parser('tweet', description=TWEETER_DESC, usage='%(prog)s [options]')
+    tbu.args.add_default_args(tweeter, include=('user', 'config', 'dry-run', 'verbose', 'quiet'))
     tweeter.add_argument('-r', '--reply', action='store_const', const='reply',
                          dest='action', help='tweet responses to recent mentions')
     tweeter.add_argument('--corpus', dest='corpus', metavar='corpus', type=str,
                          help='text file, one sentence per line')
+    tweeter.add_argument('--max-len', type=int, default=140, help='maximum output length')
+    tweeter.add_argument('--state-size', type=int, help='model state size')
     tweeter.add_argument('--no-learn', dest='learn', action='store_false',
                          help='skip learning (by default, recent tweets are added to corpus)')
-    tweeter.set_defaults(func=tweet_func, action='tweet')
+    tweeter.set_defaults(subparser='tweet', func=tweet_func, action='tweet')
 
     learner = subparsers.add_parser('corpus', description=LEARNER_DESC, usage="%(prog)s [options] archive corpus")
     learner.add_argument('-o', type=str, dest='output', metavar='corpus',
@@ -60,42 +62,49 @@ def main():
     learner.add_argument('archive', type=str, metavar='archive',
                          default=os.getcwd(), help='archive csv file (e.g. tweets.csv found in Twitter archive)')
 
-    learner.set_defaults(func=learn_func)
+    learner.set_defaults(subparser='learn', func=learn_func, action='learn')
 
     args = parser.parse_args()
     func = args.func
     argdict = vars(args)
     del argdict['func']
-    func(argdict)
+
+    if args.subparser == 'tweet':
+        func(**argdict)
+
+    elif args.subparser == 'learn':
+        func(**argdict)
 
 
-def tweet_func(args):
-    tm = TwitterMarkov(**args)
+def tweet_func(action, max_len=None, **kwargs):
+    tm = TwitterMarkov(**kwargs)
 
-    if args['action'] == 'tweet':
-        tm.tweet()
+    if action == 'tweet':
+        tm.log.debug('tweeting')
+        tm.tweet(max_len=max_len)
 
-    elif args['action'] == 'reply':
-        tm.reply_all()
+    elif action == 'reply':
+        tm.log.debug('replying')
+        tm.reply_all(max_len=max_len)
 
 
-def learn_func(args):
-    if not args['quiet']:
-        print("Reading " + args['archive'], file=sys.stderr)
+def learn_func(**kwargs):
+    if not kwargs['quiet']:
+        print("Reading " + kwargs['archive'], file=sys.stderr)
 
-    archive = tbu.archive.read_csv(args.get('archive'))
-    gen = checking.generator(archive, **args)
+    archive = tbu.archive.read_csv(kwargs.get('archive'))
+    gen = checking.generator(archive, **kwargs)
     tweets = (tweet.replace(u'\n', u' ') + '\n' for tweet in gen)
 
-    if args['output'] in ('-', '/dev/stdout'):
+    if kwargs['output'] in ('-', '/dev/stdout'):
         signal(SIGPIPE, SIG_DFL)
         sys.stdout.writelines(tweets)
 
     else:
-        if not args['quiet']:
-            print("Writing " + args['output'], file=sys.stderr)
+        if not kwargs['quiet']:
+            print("Writing " + kwargs['output'], file=sys.stderr)
 
-        with open(args.get('output'), 'w') as f:
+        with open(kwargs.get('output'), 'w') as f:
             f.writelines(tweets)
 
 if __name__ == '__main__':
