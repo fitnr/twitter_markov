@@ -43,10 +43,10 @@ def main():
                          dest='action', help='tweet responses to recent mentions')
     tweeter.add_argument('--corpus', dest='corpus', metavar='corpus', type=str,
                          help='text file, one sentence per line')
-    tweeter.add_argument('--max-len', type=int, default=140, help='maximum output length')
-    tweeter.add_argument('--state-size', type=int, help='model state size')
+    tweeter.add_argument('--max-len', type=int, default=140, help='maximum output length. default: 140')
+    tweeter.add_argument('--state-size', type=int, help='model state size. default: 2')
     tweeter.add_argument('--no-learn', dest='learn', action='store_false',
-                         help='skip learning (by default, recent tweets are added to corpus)')
+                         help='skip learning (by default, recent tweets from the "parent" account are added to corpus)')
     tweeter.set_defaults(subparser='tweet', func=tweet_func, action='tweet')
 
     learner = subparsers.add_parser('corpus', description=LEARNER_DESC, usage="%(prog)s [options] archive corpus")

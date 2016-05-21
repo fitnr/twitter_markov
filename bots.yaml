@@ -7,7 +7,6 @@ apps:
 
 users:
     example_screen_name:
-
         # oauth with twitter to get these
         key: '...'
         secret: '...'
@@ -25,7 +24,7 @@ users:
         corpus: tests/data/tweets.txt
 
         # How many tweets should we check to make sure we're not repeating something we already tweeted?
-        checkback: 100
+        checkback: 20
 
         # This determines how long of a phrase the markov chain be working with.
         # Higher values are slower and hew closer to the corpus
