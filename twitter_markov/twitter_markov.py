@@ -100,7 +100,7 @@ class TwitterMarkov(object):
         self.log.debug('setting up models')
         out = dict()
 
-        state_size = state_size or 3
+        state_size = state_size or 2
 
         try:
             for pth in corpora:
