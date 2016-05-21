@@ -1,3 +1,9 @@
+0.4.6
+-----
+* refactor TwitterMarkov.compose to use make_short_sentence.
+* Add max-len and state-size options to cli.
+* change default state size to 2
+
 0.4.5
 -----
 * ignore tweets with blacklisted words when replying
