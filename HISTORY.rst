@@ -1,3 +1,8 @@
+0.5.0
+-----
+* Allow for 280-character tweets
+* Raise a `RunTimeError` if model fails to compose anything.
+
 0.4.6
 -----
 * refactor TwitterMarkov.compose to use make_short_sentence.
