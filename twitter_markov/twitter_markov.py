@@ -19,6 +19,7 @@ import logging
 from random import choice
 from collections import Iterable
 import Levenshtein
+import six
 import markovify.text
 import twitter_bot_utils as tbu
 from wordfilter import Wordfilter
@@ -63,7 +64,7 @@ class TwitterMarkov(object):
         try:
             corpus = corpus or self.config.get('corpus')
 
-            if isinstance(corpus, basestring):
+            if isinstance(corpus, six.string_types):
                 corpora = [corpus]
 
             elif isinstance(corpus, Iterable):

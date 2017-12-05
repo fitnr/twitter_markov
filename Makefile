@@ -23,10 +23,7 @@ docs.zip: docs/source/conf.py $(wildcard docs/*.rst docs/*/*.rst twitter_markov/
 	zip -qr ../../../$@ . -x '*/.DS_Store' .DS_Store
 
 deploy: README.rst | clean
-	python setup.py register
-	python3 setup.py sdist bdist_wheel
-	$(MAKE) clean
-	python setup.py sdist
+	python3 setup.py sdist bdist_wheel --universal
 	twine upload dist/*
 	git push
 	git push --tags
@@ -34,8 +31,7 @@ deploy: README.rst | clean
 README.rst: README.md
 	- pandoc $< -o $@
 	@touch $@
-	python setup.py check --restructuredtext --strict
-
+	- python setup.py check --restructuredtext --strict
 
 test: cov
 	coverage html

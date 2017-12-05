@@ -57,10 +57,9 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Operating System :: OS Independent',
     ],
-
-    use_2to3=True,
 
     zip_safe=True,
 
@@ -71,6 +70,7 @@ setup(
         'wordfilter>=0.1.8, <0.2.0'
         'pyyaml',
         'tweepy',
+        'six'
     ],
 
     test_suite='tests',
