@@ -46,7 +46,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'twittermarkov=twitter_markov.cli:main',
+            'twittermarkov=twitter_markov.__main__:main',
         ],
     },
 

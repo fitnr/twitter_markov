@@ -18,7 +18,7 @@ import unittest
 import sys
 from os import path, remove
 import subprocess
-from twitter_markov import cli
+from twitter_markov import __main__ as cli
 from twitter_bot_utils import archive
 
 
