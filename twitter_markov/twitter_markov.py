@@ -99,10 +99,9 @@ class TwitterMarkov(object):
         Given a list of paths to corpus text files, set up markovify models for each.
         These models are returned in a dict, (with the basename as key).
         """
-        self.log.debug('setting up models (state_size=%s)', state_size)
         out = dict()
-
         state_size = state_size or 2
+        self.log.debug('setting up models (state_size=%s)', state_size)
 
         try:
             for pth in corpora:
@@ -213,7 +212,6 @@ class TwitterMarkov(object):
         model = self.models[model or self.default_model]
         text = self.compose(model, **kwargs)
         if text:
-            self.log.info(text)
             self._update(text)
 
     def _update(self, tweet, in_reply=None):

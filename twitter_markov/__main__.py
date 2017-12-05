@@ -65,7 +65,11 @@ def main():
     learner.set_defaults(subparser='learn', func=learn_func, action='learn')
 
     args = parser.parse_args()
-    func = args.func
+    try:
+        func = args.func
+    except AttributeError:
+        parser.parse_args(['--help'])
+
     argdict = vars(args)
     del argdict['func']
 
@@ -78,7 +82,6 @@ def main():
 
 def tweet_func(action, max_len=None, **kwargs):
     tm = TwitterMarkov(**kwargs)
-
     if action == 'tweet':
         tm.log.debug('tweeting')
         tm.tweet(max_len=max_len)
