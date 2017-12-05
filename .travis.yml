@@ -1,5 +1,5 @@
 # twitter_markov - Create markov chain ("_ebooks") accounts on Twitter
-# Copyright 2014-2016 Neil Freeman contact@fakeisthenewreal.org
+# Copyright 2014-2017 Neil Freeman contact@fakeisthenewreal.org
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,30 +20,12 @@ python:
  - 2.7
  - 3.4
  - 3.5
+ - 3.6
  - pypy
  - pypy3
 
-env:
-  - TWEEPYVERSION=3.5.0
-  - TWEEPYVERSION=3.4.0
+before_install: travis_retry pip install "setuptools>=17.1" "pbr>=0.11,<1.0" mock coverage
 
-before_install:
- - pip install setuptools>=17.1 "pbr>=0.11,<1.0" mock
+install: travis_retry python setup.py -vvv install
 
-install:
- - pip install tweepy==$TWEEPYVERSION
- - python setup.py install
-
-script:
- - python setup.py test
-
-matrix:
-  exclude:
-    - env: TWEEPYVERSION=3.4.0
-      python: pypy3
-
-    - env: TWEEPYVERSION=3.4.0
-      python: pypy
-
-    - env: TWEEPYVERSION=3.4.0
-      python: 3.4
+script: make test
