@@ -16,7 +16,6 @@ from __future__ import unicode_literals, print_function
 import os
 import re
 import logging
-from random import choice
 from collections import Iterable
 import Levenshtein
 import six
