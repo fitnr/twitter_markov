@@ -147,6 +147,10 @@ class TwitterMarkov(object):
             self.log.info("Rejected (blacklisted)")
             return False
 
+        if tbu.helpers.length(text) > 280:
+            self.log.info("Rejected (too long)")
+            return False
+
         for line in self.recently_tweeted:
             if text in line.strip().lower():
                 self.log.info("Rejected (Identical)")
@@ -223,7 +227,7 @@ class TwitterMarkov(object):
 
         Args:
             model (str): one of self.models
-            max_len (int): maximum length of the output (max: 140, default: 140).
+            max_len (int): maximum length of the output (max: 280, default: 140).
             init_state (tuple): tuple of words to seed the model
             tries (int): (default: 10)
             max_overlap_ratio (float): Used for testing output (default: 0.7).
@@ -233,7 +237,7 @@ class TwitterMarkov(object):
             str
         '''
         model = model or self.models[self.default_model]
-        max_len = min(140, max_len)
+        max_len = min(280, max_len)
         self.log.debug('making sentence, max_len=%s, %s', max_len, kwargs)
         text = model.make_short_sentence(max_len, **kwargs)
 

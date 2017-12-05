@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # twitter_markov - Create markov chain ("_ebooks") accounts on Twitter
 # Copyright 2014-2016 Neil Freeman contact@fakeisthenewreal.org
 
@@ -64,6 +65,13 @@ class tweeter_markov_tests(unittest.TestCase):
         tm = TwitterMarkov('example_screen_name', self.corpus,
                            config=self.configfile, dry_run=True, learn=False)
         assert isinstance(tm.models['tweets.txt'], markovify.text.Text)
+
+    def testCheck(self):
+        tm = TwitterMarkov('example_screen_name', [self.corpus], config=self.configfile,
+                           dry_run=True, learn=False)
+        self.assertFalse(tm.check_tweet('😀' * 141))
+        self.assertFalse(tm.check_tweet(''))
+        self.assertFalse(tm.check_tweet('contains the blacklisted word tits'))
 
 if __name__ == '__main__':
     unittest.main()
