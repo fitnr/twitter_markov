@@ -82,13 +82,18 @@ def main():
 
 def tweet_func(action, max_len=None, **kwargs):
     tm = TwitterMarkov(**kwargs)
-    if action == 'tweet':
-        tm.log.debug('tweeting')
-        tm.tweet(max_len=max_len)
+    try:
+        if action == 'tweet':
+            tm.log.debug('tweeting')
+            tm.tweet(max_len=max_len)
 
-    elif action == 'reply':
-        tm.log.debug('replying')
-        tm.reply_all(max_len=max_len)
+        elif action == 'reply':
+            tm.log.debug('replying')
+            tm.reply_all(max_len=max_len)
+
+    except RuntimeError:
+        tm.log.error('model was unable to compose a tweet')
+        return
 
 
 def learn_func(**kwargs):

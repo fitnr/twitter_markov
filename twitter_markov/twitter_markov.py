@@ -241,7 +241,7 @@ class TwitterMarkov(object):
 
         if text is None:
             self.log.error('model failed to generate a sentence')
-            return
+            raise RuntimeError('model failed to generate a sentence')
 
         # convert to unicode in Python 2
         if hasattr(text, 'decode'):
