@@ -96,7 +96,8 @@ class TwitterMarkov(object):
 
     def _setup_models(self, corpora, state_size):
         """
-        Given a list of paths to corpus text files, set up markovify models for each.
+        Given a list of paths to corpus text files or file-like objects,
+        set up markovify models for each.
         These models are returned in a dict, (with the basename as key).
         """
         out = dict()
@@ -105,11 +106,24 @@ class TwitterMarkov(object):
 
         try:
             for pth in corpora:
-                corpus_path = os.path.expanduser(pth)
-                name = os.path.basename(corpus_path)
+                if isinstance(pth, six.string_types):
+                    corpus_path = os.path.expanduser(pth)
+                    name = os.path.basename(corpus_path)
 
-                with open(corpus_path) as m:
+                else:
+                    m = pth
+
+                    try:
+                        name = m.name
+                    except AttributeError:
+                        name = repr(m)
+
+                try:
+                    m = open(corpus_path)
                     out[name] = markovify.text.NewlineText(m.read(), state_size=state_size)
+
+                finally:
+                    m.close()
 
         except AttributeError as e:
             self.log.error(e)
@@ -234,7 +248,7 @@ class TwitterMarkov(object):
         Returns:
             str
         '''
-        model = model or self.models[self.default_model]
+        model = self.models.get(model, self.default_model)
         max_len = min(280, max_len)
         self.log.debug('making sentence, max_len=%s, %s', max_len, kwargs)
         text = model.make_short_sentence(max_len, **kwargs)
