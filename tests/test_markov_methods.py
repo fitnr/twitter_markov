@@ -19,6 +19,7 @@ import os
 from os import path
 import mock
 import tweepy
+import markovify.text
 from twitter_markov import TwitterMarkov
 
 try:
@@ -72,6 +73,10 @@ class tweeter_markov_tests(unittest.TestCase):
                                 dry_run=True, learn=False)
 
         self.tm.log.setLevel(100)
+
+    def testCheckModels(self):
+        for m in self.tm.models.values():
+            self.assertIsInstance(m, markovify.text.NewlineText)
 
     @mock.patch.object(tweepy.API, 'user_timeline', return_value=fake_timeline())
     def testTwitterMarkovCompose(self, *_):

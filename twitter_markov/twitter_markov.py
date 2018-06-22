@@ -109,17 +109,16 @@ class TwitterMarkov(object):
                 if isinstance(pth, six.string_types):
                     corpus_path = os.path.expanduser(pth)
                     name = os.path.basename(corpus_path)
+                    m = open(corpus_path)
 
                 else:
                     m = pth
-
                     try:
                         name = m.name
                     except AttributeError:
                         name = repr(m)
 
                 try:
-                    m = open(corpus_path)
                     out[name] = markovify.text.NewlineText(m.read(), state_size=state_size)
 
                 finally:
@@ -142,7 +141,7 @@ class TwitterMarkov(object):
     @property
     def recently_tweeted(self):
         '''Returns recent tweets from ``self.screen_name``.'''
-        if len(self._recently_tweeted) == 0:
+        if not self._recently_tweeted:
             recent_tweets = self.api.user_timeline(self.screen_name, count=self.config.get('checkback', 20))
             self._recently_tweeted = [x.text for x in recent_tweets]
 
@@ -152,7 +151,7 @@ class TwitterMarkov(object):
         '''Check if a string contains blacklisted words or is similar to a recent tweet.'''
         text = text.strip().lower()
 
-        if len(text) == 0:
+        if not text:
             self.log.info("Rejected (empty)")
             return False
 
@@ -248,7 +247,7 @@ class TwitterMarkov(object):
         Returns:
             str
         '''
-        model = self.models.get(model, self.default_model)
+        model = self.models.get(model or self.default_model)
         max_len = min(280, max_len)
         self.log.debug('making sentence, max_len=%s, %s', max_len, kwargs)
         text = model.make_short_sentence(max_len, **kwargs)
