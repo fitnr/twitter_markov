@@ -34,11 +34,11 @@ README.rst: README.md
 	- python setup.py check --restructuredtext --strict
 
 htmlcov: test
-	coverage html
+	python -m coverage html
 
 test:
-	- coverage run --include='build/lib/twitter_markov/*,twitter_markov/*' setup.py -q test
-	coverage report
+	- python -m coverage run --include='build/lib/twitter_markov/*,twitter_markov/*' setup.py -q test
+	python -m coverage report
 
 clean:; rm -rf dist build
 
