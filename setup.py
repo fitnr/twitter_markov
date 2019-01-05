@@ -68,7 +68,7 @@ setup(
         'markovify>=0.2.4,<0.4',
         'python-Levenshtein>=0.12.0, <0.13',
         'wordfilter>=0.1.8',
-        'pyyaml',
+        'pyyaml>=4.2b1',
         'tweepy',
         'six'
     ],
