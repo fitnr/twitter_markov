@@ -1,3 +1,7 @@
+0.6.0
+-----
+* Remove support for Python 2
+
 0.5.0
 -----
 * Allow for 280-character tweets

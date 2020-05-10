@@ -54,17 +54,17 @@ setup(
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Operating System :: OS Independent',
     ],
 
     zip_safe=True,
 
     install_requires=[
-        'twitter_bot_utils>=0.11.6.post1,<0.12',
+        'twitter_bot_utils>=0.12.0',
         'markovify>=0.2.4,<0.4',
         'python-Levenshtein>=0.12.0, <0.13',
         'wordfilter>=0.1.8',
